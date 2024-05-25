@@ -2,7 +2,7 @@
 set -e
 
 mongosh <<EOF
-use homepedia
+use ${MONGO_INITDB_DATABASE}
 db.createUser({
   user: '$MONGODB_USER',
   pwd:  '$MONGODB_PASSWORD',

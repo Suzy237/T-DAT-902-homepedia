@@ -113,9 +113,9 @@ services:
 
 ### Mongodb
   mongodb:
-    image: mongo:latest
+    image: mongodb/mongodb-community-server:latest
+    hostname: mongodb
     container_name: mongodb
-    restart: always
     ports:
       - "27017:27017"
     environment:

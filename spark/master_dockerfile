@@ -1,0 +1,35 @@
+# spark-master Dockerfile
+FROM bitnami/spark:latest
+
+USER root
+
+# Install essential packages
+RUN apt-get update && apt-get install -y curl nano rsync openssh-client iputils-ping dnsutils python3-requests python3-pip
+
+# Install Python packages through pip
+RUN pip3 install requests
+
+# Make a directory for the Python scripts
+RUN mkdir -p /opt/python_scripts
+
+# Copy Python scripts into the container
+COPY ./app/python_scripts/* /opt/python_scripts/
+
+# Copy initialization script
+COPY ./spark/init_hdfs.sh /opt/init_hdfs.sh
+
+# Change Spark settings
+RUN echo "spark.master yarn" > /opt/bitnami/spark/conf/spark-defaults.conf
+RUN echo "spark.master.rest.enabled true" > /opt/bitnami/spark/conf/spark-defaults.conf
+RUN echo "spark.eventLog.enabled true" >> /opt/bitnami/spark/conf/spark-defaults.conf
+RUN echo "spark.app.name homepedia" >> /opt/bitnami/spark/conf/spark-defaults.conf
+RUN echo "spark.history.fs.logDirectory /opt/spark/spark-events" >> /opt/bitnami/spark/conf/spark-defaults.conf
+RUN echo "spark.eventLog.dir /opt/spark/spark-events" >> /opt/bitnami/spark/conf/spark-defaults.conf
+
+# Make the initialization script executable
+RUN chmod +x /opt/init_hdfs.sh
+
+USER 1001
+
+# Set entrypoint to run the initialization script first
+ENTRYPOINT ["/bin/bash", "-c", "cd /opt && ./init_hdfs.sh && /opt/bitnami/scripts/spark/entrypoint.sh /opt/bitnami/scripts/spark/run.sh"]

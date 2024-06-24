@@ -1,0 +1,13 @@
+FROM bitnami/spark:latest
+
+USER root
+RUN apt-get update && apt-get install -y curl nano rsync openssh-client iputils-ping dnsutils python3-requests python3-pip
+RUN pip3 install requests
+RUN echo "spark.app.name homepedia" >> /opt/bitnami/spark/conf/spark-defaults.conf
+RUN echo "spark.eventLog.enabled true" >> /opt/bitnami/spark/conf/spark-defaults.conf
+RUN echo "spark.history.fs.logDirectory /opt/spark/spark-events" >> /opt/bitnami/spark/conf/spark-defaults.conf
+RUN echo "spark.eventLog.dir /opt/spark/spark-events" >> /opt/bitnami/spark/conf/spark-defaults.conf
+
+USER 1001
+
+ENTRYPOINT ["/bin/bash", "-c", "/opt/bitnami/scripts/spark/entrypoint.sh /opt/bitnami/scripts/spark/run.sh && spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077"]

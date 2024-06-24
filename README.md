@@ -5,7 +5,7 @@
 Voici les principaux répertoires et fichiers du projet:
 
 - **app/** : Contient le code source de l'application.
-- **config/** : Contient les fichiers de configuration pour Hadoop et Spark. Ce dossier n'est pas encore implémenté : TODO car le .env n'est pas toujours pris en compte (Spark ne le prends pas totalement en compte, donc besoin d'implémenter le config).
+- **config/** : Contient les fichiers de configuration pour Hadoop et Spark. Ce dossier n'est pas encore implémenté : TODO car le .env n'est pas toujours pris en compte (Spark ne le prend pas totalement en compte, donc besoin d'implémenter le config).
 - **spark/** : Contient les Dockerfiles pour configurer les nœuds maître et travailleurs de Spark.
 - **docker-compose.yml** : Fichier de configuration Docker Compose pour orchestrer les différents services.
 - **.env** : Fichier d'environnement contenant les variables nécessaires à l'application.
@@ -81,7 +81,11 @@ L'application utilise un fichier de configuration NGINX (`nginx.conf`) pour le r
 - [x] **Migrations dans le back-end, base de données structurée** : Voir la section ci-dessous pour plus de détails sur la base de données.
 - [ ] **TODO** : Corriger Spark et son interaction avec l'application et Hadoop.
 - [ ] **TODO** : Traiter les données et les insérer dans notre base de données (les données de crime vont dans MongoDB, il y a un contrôleur Mongo qui s'en charge).
-- [ ] TODO : Implémenter les fichiers de configuration pour Hadoop et Spark dans config/ car le .env n'est pas toujours pris en compte.
+- [ ] **TODO** : Implémenter les fichiers de configuration pour Hadoop et Spark dans `config/` car le `.env` n'est pas toujours pris en compte.
+
+#### Point de Blocage -- où je me suis arrêté
+
+L'API Spark n'accepte pas le mode de déploiement en cluster, donc nous sommes obligés de passer par notre propre API ou d'unifier les conteneurs `app` et `spark-master` pour pouvoir appeler `docker exec` sans passer par l'API. J'ai pas réussi à stocker les logs Spark de manière propre non plus.
 
 #### Schéma et Migrations de la Base de Données
 

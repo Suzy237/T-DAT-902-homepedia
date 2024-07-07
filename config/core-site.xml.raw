@@ -1,0 +1,4 @@
+fs.default.name: hdfs://namenode
+dfs.namenode.name.dir: /tmp/hadoop-root/dfs/name
+dfs.datanode.data.dir: /tmp/hadoop-root/dfs/data
+fs.defaultFS: hdfs://namenode

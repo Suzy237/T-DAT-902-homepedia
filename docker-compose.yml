@@ -10,6 +10,8 @@ services:
       - .env
     networks:
       - homepedia
+    volumes:
+      - ./config/:/etc/hadoop
 
   datanode:
     image: apache/hadoop:3
@@ -19,6 +21,8 @@ services:
       - .env
     networks:
       - homepedia
+    volumes:
+      - ./config/:/etc/hadoop
 
   resourcemanager:
     image: apache/hadoop:3
@@ -97,6 +101,7 @@ services:
     container_name: homepedia-spark-master
     volumes:
       - ./spark-logs:/opt/spark/spark-events
+      - ./config:/spark/config
     env_file:
       - .env
     networks:
@@ -119,6 +124,7 @@ services:
     scale: 6
     volumes:
       - ./spark-logs:/opt/spark/spark-events
+      - ./config:/spark/config
     networks:
       - homepedia
     depends_on:

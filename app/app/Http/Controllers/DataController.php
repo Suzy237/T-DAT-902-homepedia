@@ -22,7 +22,7 @@ class DataController extends Controller
             if ($data['status'] !== 'success') {
                 return response()->json(['status' => 'error', 'message' => $data['message']], 500);
             }
-            return response()->json(['status' => 'success', 'data' => $data['data']]);
+            return response()->json(['status' => 'success', 'data' => $data['results']]);
         } catch (\Exception $e) {
             Log::error("Error fetching CSVs: " . $e->getMessage());
             return response()->json(['status' => 'error', 'message' => 'Error fetching CSVs'], 500);
@@ -36,7 +36,7 @@ class DataController extends Controller
             if ($data['status'] !== 'success') {
                 return response()->json(['status' => 'error', 'message' => $data['message']], 500);
             }
-            return response()->json(['status' => 'success', 'data' => $data['data']]);
+            return response()->json(['status' => 'success', 'data' => $data['results']]);
         } catch (\Exception $e) {
             Log::error("Error processing data: " . $e->getMessage());
             return response()->json(['status' => 'error', 'message' => 'Error processing data'], 500);

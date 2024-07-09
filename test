@@ -1,0 +1,364 @@
+Starting nginx: nginx.
+[09-Jul-2024 03:33:46] NOTICE: fpm is running, pid 24
+[09-Jul-2024 03:33:46] NOTICE: ready to handle connections
+[2024-07-09 05:33:53] production.ERROR: SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "sessions" does not exist
+LINE 1: select * from "sessions" where "id" = $1 limit 1
+                      ^ (Connection: pgsql, SQL: select * from "sessions" where "id" = LJLw0BAbAtg4geh3ir2EvixeTRiwLmTD1UgbLXqL limit 1) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42P01): SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation \"sessions\" does not exist
+LINE 1: select * from \"sessions\" where \"id\" = $1 limit 1
+                      ^ (Connection: pgsql, SQL: select * from \"sessions\" where \"id\" = LJLw0BAbAtg4geh3ir2EvixeTRiwLmTD1UgbLXqL limit 1) at /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813)
+[stacktrace]
+#0 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(767): Illuminate\\Database\\Connection->runQueryCallback('select * from \"...', Array, Object(Closure))
+#1 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(398): Illuminate\\Database\\Connection->run('select * from \"...', Array, Object(Closure))
+#2 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2993): Illuminate\\Database\\Connection->select('select * from \"...', Array, true)
+#3 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2978): Illuminate\\Database\\Query\\Builder->runSelect()
+#4 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(3566): Illuminate\\Database\\Query\\Builder->Illuminate\\Database\\Query\\{closure}()
+#5 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2977): Illuminate\\Database\\Query\\Builder->onceWithColumns(Array, Object(Closure))
+#6 /var/www/vendor/laravel/framework/src/Illuminate/Database/Concerns/BuildsQueries.php(335): Illuminate\\Database\\Query\\Builder->get(Array)
+#7 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2900): Illuminate\\Database\\Query\\Builder->first(Array)
+#8 /var/www/vendor/laravel/framework/src/Illuminate/Session/DatabaseSessionHandler.php(97): Illuminate\\Database\\Query\\Builder->find('LJLw0BAbAtg4geh...')
+#9 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(113): Illuminate\\Session\\DatabaseSessionHandler->read('LJLw0BAbAtg4geh...')
+#10 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(101): Illuminate\\Session\\Store->readFromHandler()
+#11 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(85): Illuminate\\Session\\Store->loadSession()
+#12 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(147): Illuminate\\Session\\Store->start()
+#13 /var/www/vendor/laravel/framework/src/Illuminate/Support/helpers.php(363): Illuminate\\Session\\Middleware\\StartSession->Illuminate\\Session\\Middleware\\{closure}(Object(Illuminate\\Session\\Store))
+#14 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(144): tap(Object(Illuminate\\Session\\Store), Object(Closure))
+#15 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(116): Illuminate\\Session\\Middleware\\StartSession->startSession(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store))
+#16 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#17 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#18 /var/www/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#19 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 /var/www/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(75): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#24 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#25 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#26 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#27 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#28 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#29 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#30 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#31 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#36 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#45 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#46 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1183): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#47 /var/www/public/index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#48 {main}
+[previous exception] [object] (PDOException(code: 42P01): SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation \"sessions\" does not exist
+LINE 1: select * from \"sessions\" where \"id\" = $1 limit 1
+                      ^ at /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php:412)
+[stacktrace]
+#0 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(412): PDOStatement->execute()
+#1 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(800): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('select * from \"...', Array)
+#2 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(767): Illuminate\\Database\\Connection->runQueryCallback('select * from \"...', Array, Object(Closure))
+#3 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(398): Illuminate\\Database\\Connection->run('select * from \"...', Array, Object(Closure))
+#4 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2993): Illuminate\\Database\\Connection->select('select * from \"...', Array, true)
+#5 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2978): Illuminate\\Database\\Query\\Builder->runSelect()
+#6 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(3566): Illuminate\\Database\\Query\\Builder->Illuminate\\Database\\Query\\{closure}()
+#7 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2977): Illuminate\\Database\\Query\\Builder->onceWithColumns(Array, Object(Closure))
+#8 /var/www/vendor/laravel/framework/src/Illuminate/Database/Concerns/BuildsQueries.php(335): Illuminate\\Database\\Query\\Builder->get(Array)
+#9 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2900): Illuminate\\Database\\Query\\Builder->first(Array)
+#10 /var/www/vendor/laravel/framework/src/Illuminate/Session/DatabaseSessionHandler.php(97): Illuminate\\Database\\Query\\Builder->find('LJLw0BAbAtg4geh...')
+#11 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(113): Illuminate\\Session\\DatabaseSessionHandler->read('LJLw0BAbAtg4geh...')
+#12 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(101): Illuminate\\Session\\Store->readFromHandler()
+#13 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(85): Illuminate\\Session\\Store->loadSession()
+#14 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(147): Illuminate\\Session\\Store->start()
+#15 /var/www/vendor/laravel/framework/src/Illuminate/Support/helpers.php(363): Illuminate\\Session\\Middleware\\StartSession->Illuminate\\Session\\Middleware\\{closure}(Object(Illuminate\\Session\\Store))
+#16 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(144): tap(Object(Illuminate\\Session\\Store), Object(Closure))
+#17 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(116): Illuminate\\Session\\Middleware\\StartSession->startSession(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store))
+#18 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#19 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 /var/www/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /var/www/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(75): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#26 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#27 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#28 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#29 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#30 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#31 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1183): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 /var/www/public/index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#50 {main}
+"} 
+127.0.0.1 -  09/Jul/2024:03:33:53 +0000 "GET /index.php" 500
+[2024-07-09 05:33:56] production.ERROR: SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "sessions" does not exist
+LINE 1: select * from "sessions" where "id" = $1 limit 1
+                      ^ (Connection: pgsql, SQL: select * from "sessions" where "id" = LJLw0BAbAtg4geh3ir2EvixeTRiwLmTD1UgbLXqL limit 1) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42P01): SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation \"sessions\" does not exist
+LINE 1: select * from \"sessions\" where \"id\" = $1 limit 1
+                      ^ (Connection: pgsql, SQL: select * from \"sessions\" where \"id\" = LJLw0BAbAtg4geh3ir2EvixeTRiwLmTD1UgbLXqL limit 1) at /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813)
+[stacktrace]
+#0 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(767): Illuminate\\Database\\Connection->runQueryCallback('select * from \"...', Array, Object(Closure))
+#1 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(398): Illuminate\\Database\\Connection->run('select * from \"...', Array, Object(Closure))
+#2 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2993): Illuminate\\Database\\Connection->select('select * from \"...', Array, true)
+#3 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2978): Illuminate\\Database\\Query\\Builder->runSelect()
+#4 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(3566): Illuminate\\Database\\Query\\Builder->Illuminate\\Database\\Query\\{closure}()
+#5 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2977): Illuminate\\Database\\Query\\Builder->onceWithColumns(Array, Object(Closure))
+#6 /var/www/vendor/laravel/framework/src/Illuminate/Database/Concerns/BuildsQueries.php(335): Illuminate\\Database\\Query\\Builder->get(Array)
+#7 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2900): Illuminate\\Database\\Query\\Builder->first(Array)
+#8 /var/www/vendor/laravel/framework/src/Illuminate/Session/DatabaseSessionHandler.php(97): Illuminate\\Database\\Query\\Builder->find('LJLw0BAbAtg4geh...')
+#9 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(113): Illuminate\\Session\\DatabaseSessionHandler->read('LJLw0BAbAtg4geh...')
+#10 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(101): Illuminate\\Session\\Store->readFromHandler()
+#11 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(85): Illuminate\\Session\\Store->loadSession()
+#12 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(147): Illuminate\\Session\\Store->start()
+#13 /var/www/vendor/laravel/framework/src/Illuminate/Support/helpers.php(363): Illuminate\\Session\\Middleware\\StartSession->Illuminate\\Session\\Middleware\\{closure}(Object(Illuminate\\Session\\Store))
+#14 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(144): tap(Object(Illuminate\\Session\\Store), Object(Closure))
+#15 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(116): Illuminate\\Session\\Middleware\\StartSession->startSession(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store))
+#16 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#17 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#18 /var/www/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#19 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 /var/www/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(75): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#24 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#25 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#26 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#27 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#28 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#29 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#30 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#31 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#36 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#45 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#46 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1183): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#47 /var/www/public/index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#48 {main}
+[previous exception] [object] (PDOException(code: 42P01): SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation \"sessions\" does not exist
+LINE 1: select * from \"sessions\" where \"id\" = $1 limit 1
+                      ^ at /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php:412)
+[stacktrace]
+#0 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(412): PDOStatement->execute()
+#1 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(800): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('select * from \"...', Array)
+#2 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(767): Illuminate\\Database\\Connection->runQueryCallback('select * from \"...', Array, Object(Closure))
+#3 /var/www/vendor/laravel/framework/src/Illuminate/Database/Connection.php(398): Illuminate\\Database\\Connection->run('select * from \"...', Array, Object(Closure))
+#4 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2993): Illuminate\\Database\\Connection->select('select * from \"...', Array, true)
+#5 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2978): Illuminate\\Database\\Query\\Builder->runSelect()
+#6 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(3566): Illuminate\\Database\\Query\\Builder->Illuminate\\Database\\Query\\{closure}()
+#7 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2977): Illuminate\\Database\\Query\\Builder->onceWithColumns(Array, Object(Closure))
+#8 /var/www/vendor/laravel/framework/src/Illuminate/Database/Concerns/BuildsQueries.php(335): Illuminate\\Database\\Query\\Builder->get(Array)
+#9 /var/www/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(2900): Illuminate\\Database\\Query\\Builder->first(Array)
+#10 /var/www/vendor/laravel/framework/src/Illuminate/Session/DatabaseSessionHandler.php(97): Illuminate\\Database\\Query\\Builder->find('LJLw0BAbAtg4geh...')
+#11 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(113): Illuminate\\Session\\DatabaseSessionHandler->read('LJLw0BAbAtg4geh...')
+#12 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(101): Illuminate\\Session\\Store->readFromHandler()
+#13 /var/www/vendor/laravel/framework/src/Illuminate/Session/Store.php(85): Illuminate\\Session\\Store->loadSession()
+#14 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(147): Illuminate\\Session\\Store->start()
+#15 /var/www/vendor/laravel/framework/src/Illuminate/Support/helpers.php(363): Illuminate\\Session\\Middleware\\StartSession->Illuminate\\Session\\Middleware\\{closure}(Object(Illuminate\\Session\\Store))
+#16 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(144): tap(Object(Illuminate\\Session\\Store), Object(Closure))
+#17 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(116): Illuminate\\Session\\Middleware\\StartSession->startSession(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store))
+#18 /var/www/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#19 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#20 /var/www/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#21 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /var/www/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(75): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#26 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#27 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#28 /var/www/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#29 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#30 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#31 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#37 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#38 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#39 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#40 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#41 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 /var/www/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 /var/www/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#46 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#47 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#48 /var/www/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1183): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#49 /var/www/public/index.php(17): Illuminate\\Foundation\\Application->handleRequest(Object(Illuminate\\Http\\Request))
+#50 {main}
+"} 
+127.0.0.1 -  09/Jul/2024:03:33:56 +0000 "GET /index.php" 500
+127.0.0.1 -  09/Jul/2024:03:34:19 +0000 "GET /index.php" 200
+127.0.0.1 -  09/Jul/2024:03:34:21 +0000 "GET /index.php" 200
+127.0.0.1 -  09/Jul/2024:03:34:22 +0000 "POST /index.php" 302
+127.0.0.1 -  09/Jul/2024:03:34:22 +0000 "GET /index.php" 200
+127.0.0.1 -  09/Jul/2024:03:34:24 +0000 "GET /index.php" 200
+127.0.0.1 -  09/Jul/2024:03:34:31 +0000 "POST /index.php" 302
+127.0.0.1 -  09/Jul/2024:03:34:31 +0000 "GET /index.php" 200
+[2024-07-09 05:34:44] production.INFO: Executing Python script: /var/www/python_scripts/process_housing_market_data.py  
+24/07/09 03:34:45 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+[Stage 0:>                                                          (0 + 1) / 1]                                                                                [Stage 1:>                                                        (0 + 12) / 12][Stage 1:====>                                                    (1 + 11) / 12][Stage 1:=========>                                               (2 + 10) / 12][Stage 1:========================>                                 (5 + 7) / 12][Stage 1:======================================>                   (8 + 4) / 12][Stage 1:====================================================>    (11 + 1) / 12]                                                                                [Stage 5:>                                                        (0 + 10) / 10][Stage 5:=====>                                                    (1 + 9) / 10][Stage 5:=================>                                        (3 + 7) / 10][Stage 5:=======================>                                  (4 + 6) / 10][Stage 5:=============================>                            (5 + 5) / 10][Stage 5:====================================================>     (9 + 1) / 10]                                                                                [Stage 7:>                                                          (0 + 1) / 1]                                                                                [Stage 8:>                                                        (0 + 12) / 12][Stage 8:>                                                        (0 + 12) / 12][Stage 8:====>                                                    (1 + 11) / 12][Stage 8:=========>                                               (2 + 10) / 12][Stage 8:==============>                                           (3 + 9) / 12][Stage 8:===================>                                      (4 + 8) / 12][Stage 8:=============================>                            (6 + 6) / 12][Stage 8:=================================>                        (7 + 5) / 12][Stage 8:===============================================>         (10 + 2) / 12]                                                                                24/07/09 03:37:29 WARN SparkStringUtils: Truncated the string representation of a plan since it was too large. This behavior can be adjusted by setting 'spark.sql.debug.maxToStringFields'.
+[Stage 9:>                                                        (0 + 10) / 10][Stage 9:=====>                                                    (1 + 9) / 10][Stage 9:===========>                                              (2 + 8) / 10][Stage 9:=============================>                            (5 + 5) / 10]                                                                                [Stage 10:>                                                         (0 + 2) / 2][Stage 10:=============================>                            (1 + 1) / 2]                                                                                Traceback (most recent call last):
+  File "/var/www/python_scripts/process_housing_market_data.py", line 145, in <module>
+    .save()
+     ^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pyspark/sql/readwriter.py", line 1461, in save
+    self._jwrite.save()
+  File "/usr/local/lib/python3.11/dist-packages/py4j/java_gateway.py", line 1322, in __call__
+    return_value = get_return_value(
+                   ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/pyspark/errors/exceptions/captured.py", line 179, in deco
+    return f(*a, **kw)
+           ^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/dist-packages/py4j/protocol.py", line 326, in get_return_value
+    raise Py4JJavaError(
+py4j.protocol.Py4JJavaError: An error occurred while calling o215.save.
+: org.apache.spark.SparkClassNotFoundException: [DATA_SOURCE_NOT_FOUND] Failed to find the data source: mongo. Please find packages at `https://spark.apache.org/third-party-projects.html`.
+	at org.apache.spark.sql.errors.QueryExecutionErrors$.dataSourceNotFoundError(QueryExecutionErrors.scala:724)
+	at org.apache.spark.sql.execution.datasources.DataSource$.lookupDataSource(DataSource.scala:647)
+	at org.apache.spark.sql.execution.datasources.DataSource$.lookupDataSourceV2(DataSource.scala:697)
+	at org.apache.spark.sql.DataFrameWriter.lookupV2Provider(DataFrameWriter.scala:863)
+	at org.apache.spark.sql.DataFrameWriter.saveInternal(DataFrameWriter.scala:257)
+	at org.apache.spark.sql.DataFrameWriter.save(DataFrameWriter.scala:248)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+	at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+	at py4j.Gateway.invoke(Gateway.java:282)
+	at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+	at py4j.commands.CallCommand.execute(CallCommand.java:79)
+	at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+	at py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.lang.ClassNotFoundException: mongo.DefaultSource
+	at java.base/java.net.URLClassLoader.findClass(URLClassLoader.java:445)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:592)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	at org.apache.spark.sql.execution.datasources.DataSource$.$anonfun$lookupDataSource$5(DataSource.scala:633)
+	at scala.util.Try$.apply(Try.scala:213)
+	at org.apache.spark.sql.execution.datasources.DataSource$.$anonfun$lookupDataSource$4(DataSource.scala:633)
+	at scala.util.Failure.orElse(Try.scala:224)
+	at org.apache.spark.sql.execution.datasources.DataSource$.lookupDataSource(DataSource.scala:633)
+	... 16 more
+[2024-07-09 05:37:35] production.ERROR: Failed to execute Python script:  {"output":["root"," |-- CODGEO_2023: string (nullable = true)"," |-- annee: integer (nullable = true)"," |-- classe: string (nullable = true)"," |-- unité.de.compte: string (nullable = true)"," |-- valeur.publiée: string (nullable = true)"," |-- faits: string (nullable = true)"," |-- tauxpourmille: string (nullable = true)"," |-- complementinfoval: string (nullable = true)"," |-- complementinfotaux: string (nullable = true)"," |-- POP: integer (nullable = true)"," |-- millPOP: integer (nullable = true)"," |-- LOG: string (nullable = true)"," |-- millLOG: integer (nullable = true)","","root"," |-- code_commune_INSEE: string (nullable = true)"," |-- nom_commune_postal: string (nullable = true)"," |-- code_postal: integer (nullable = true)"," |-- libelle_acheminement: string (nullable = true)"," |-- ligne_5: string (nullable = true)"," |-- latitude: double (nullable = true)"," |-- longitude: double (nullable = true)"," |-- code_commune: integer (nullable = true)"," |-- article: string (nullable = true)"," |-- nom_commune: string (nullable = true)"," |-- nom_commune_complet: string (nullable = true)"," |-- code_departement: string (nullable = true)"," |-- nom_departement: string (nullable = true)"," |-- code_region: integer (nullable = true)"," |-- nom_region: string (nullable = true)","","root"," |-- Date mutation: string (nullable = true)"," |-- Nature mutation: string (nullable = true)"," |-- Valeur fonciere: string (nullable = true)"," |-- No voie: double (nullable = true)"," |-- Code voie: string (nullable = true)"," |-- Code postal: double (nullable = true)"," |-- Commune: string (nullable = true)"," |-- Code departement: string (nullable = true)"," |-- Code commune: integer (nullable = true)"," |-- Section: string (nullable = true)"," |-- No plan: integer (nullable = true)"," |-- Nombre de lots: integer (nullable = true)"," |-- Type local: string (nullable = true)"," |-- Surface reelle bati: double (nullable = true)"," |-- Nombre pieces principales: double (nullable = true)"," |-- Surface terrain: double (nullable = true)"," |-- Type_voie: string (nullable = true)","","root"," |-- CODGEO_2023: string (nullable = true)"," |-- annee: integer (nullable = true)"," |-- classe: string (nullable = true)"," |-- unité_de_compte: string (nullable = true)"," |-- valeur_publiée: string (nullable = true)"," |-- faits: string (nullable = true)"," |-- tauxpourmille: string (nullable = true)"," |-- complementinfoval: string (nullable = true)"," |-- complementinfotaux: string (nullable = true)"," |-- POP: integer (nullable = true)"," |-- millPOP: integer (nullable = true)"," |-- LOG: string (nullable = true)"," |-- millLOG: integer (nullable = true)","","root"," |-- code_commune_INSEE: string (nullable = true)"," |-- nom_commune_postal: string (nullable = true)"," |-- code_postal: integer (nullable = true)"," |-- libelle_acheminement: string (nullable = true)"," |-- ligne_5: string (nullable = true)"," |-- latitude: double (nullable = true)"," |-- longitude: double (nullable = true)"," |-- code_commune: integer (nullable = true)"," |-- article: string (nullable = true)"," |-- nom_commune: string (nullable = true)"," |-- nom_commune_complet: string (nullable = true)"," |-- code_departement: string (nullable = true)"," |-- nom_departement: string (nullable = true)"," |-- code_region: integer (nullable = true)"," |-- nom_region: string (nullable = true)",""]} 
+[2024-07-09 05:37:35] production.ERROR: Error processing data: Failed to execute Python script: root
+ |-- CODGEO_2023: string (nullable = true)
+ |-- annee: integer (nullable = true)
+ |-- classe: string (nullable = true)
+ |-- unité.de.compte: string (nullable = true)
+ |-- valeur.publiée: string (nullable = true)
+ |-- faits: string (nullable = true)
+ |-- tauxpourmille: string (nullable = true)
+ |-- complementinfoval: string (nullable = true)
+ |-- complementinfotaux: string (nullable = true)
+ |-- POP: integer (nullable = true)
+ |-- millPOP: integer (nullable = true)
+ |-- LOG: string (nullable = true)
+ |-- millLOG: integer (nullable = true)
+root
+ |-- code_commune_INSEE: string (nullable = true)
+ |-- nom_commune_postal: string (nullable = true)
+ |-- code_postal: integer (nullable = true)
+ |-- libelle_acheminement: string (nullable = true)
+ |-- ligne_5: string (nullable = true)
+ |-- latitude: double (nullable = true)
+ |-- longitude: double (nullable = true)
+ |-- code_commune: integer (nullable = true)
+ |-- article: string (nullable = true)
+ |-- nom_commune: string (nullable = true)
+ |-- nom_commune_complet: string (nullable = true)
+ |-- code_departement: string (nullable = true)
+ |-- nom_departement: string (nullable = true)
+ |-- code_region: integer (nullable = true)
+ |-- nom_region: string (nullable = true)
+root
+ |-- Date mutation: string (nullable = true)
+ |-- Nature mutation: string (nullable = true)
+ |-- Valeur fonciere: string (nullable = true)
+ |-- No voie: double (nullable = true)
+ |-- Code voie: string (nullable = true)
+ |-- Code postal: double (nullable = true)
+ |-- Commune: string (nullable = true)
+ |-- Code departement: string (nullable = true)
+ |-- Code commune: integer (nullable = true)
+ |-- Section: string (nullable = true)
+ |-- No plan: integer (nullable = true)
+ |-- Nombre de lots: integer (nullable = true)
+ |-- Type local: string (nullable = true)
+ |-- Surface reelle bati: double (nullable = true)
+ |-- Nombre pieces principales: double (nullable = true)
+ |-- Surface terrain: double (nullable = true)
+ |-- Type_voie: string (nullable = true)
+root
+ |-- CODGEO_2023: string (nullable = true)
+ |-- annee: integer (nullable = true)
+ |-- classe: string (nullable = true)
+ |-- unité_de_compte: string (nullable = true)
+ |-- valeur_publiée: string (nullable = true)
+ |-- faits: string (nullable = true)
+ |-- tauxpourmille: string (nullable = true)
+ |-- complementinfoval: string (nullable = true)
+ |-- complementinfotaux: string (nullable = true)
+ |-- POP: integer (nullable = true)
+ |-- millPOP: integer (nullable = true)
+ |-- LOG: string (nullable = true)
+ |-- millLOG: integer (nullable = true)
+root
+ |-- code_commune_INSEE: string (nullable = true)
+ |-- nom_commune_postal: string (nullable = true)
+ |-- code_postal: integer (nullable = true)
+ |-- libelle_acheminement: string (nullable = true)
+ |-- ligne_5: string (nullable = true)
+ |-- latitude: double (nullable = true)
+ |-- longitude: double (nullable = true)
+ |-- code_commune: integer (nullable = true)
+ |-- article: string (nullable = true)
+ |-- nom_commune: string (nullable = true)
+ |-- nom_commune_complet: string (nullable = true)
+ |-- code_departement: string (nullable = true)
+ |-- nom_departement: string (nullable = true)
+ |-- code_region: integer (nullable = true)
+ |-- nom_region: string (nullable = true)
+  
+127.0.0.1 -  09/Jul/2024:03:34:44 +0000 "GET /index.php" 500

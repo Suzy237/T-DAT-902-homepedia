@@ -15,7 +15,18 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-requests \
+    procps \
+    openjdk-17-jdk \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Add Java bin to PATH
+ENV PATH="/usr/lib/jvm/java-17-openjdk-amd64/bin:${PATH}"
+
+# Make it possible to run pip3
+RUN mv /usr/lib/python3.11/EXTERNALLY-MANAGED /usr/lib/python3.11/EXTERNALLY-MANAGED.old
+
+# Install pyspark
+RUN pip3 install pyspark
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd
@@ -51,6 +62,8 @@ RUN npm install && npm run build
 # Fix permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache
+
+RUN curl -o /var/www/python_scripts/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
 
 # Expose ports for Nginx and PHP-FPM
 EXPOSE 80

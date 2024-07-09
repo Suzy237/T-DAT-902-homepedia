@@ -31,5 +31,8 @@ RUN chmod +x /opt/init_hdfs.sh
 
 USER 1001
 
+# Install https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+RUN curl -o /opt/bitnami/spark/jars/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+
 # Set entrypoint to run the initialization script first
 ENTRYPOINT ["/bin/bash", "-c", "cd /opt && ./init_hdfs.sh && /opt/bitnami/scripts/spark/entrypoint.sh /opt/bitnami/scripts/spark/run.sh"]

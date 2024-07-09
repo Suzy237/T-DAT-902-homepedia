@@ -10,16 +10,16 @@ class CreateSchoolsTable extends Migration
     {
         Schema::create('schools', function (Blueprint $table) {
             $table->id();
-            $table->string('identifiant');
-            $table->string('nom_etablissement');
-            $table->string('type_etablissement');
-            $table->string('statut_public_prive');
-            $table->string('address');
-            $table->string('postal_code');
-            $table->string('commune');
-            $table->string('department_code');
-            $table->string('region_code');
-            $table->integer('nombre_eleves');
+            $table->string('identifiant')->nullable();
+            $table->string('nom_etablissement')->nullable();
+            $table->string('type_etablissement')->nullable();
+            $table->string('statut_public_prive')->nullable();
+            $table->string('address')->nullable();
+            $table->string('postal_code')->nullable();
+            $table->string('commune')->nullable();
+            $table->string('department_code')->nullable();
+            $table->string('region_code')->nullable();
+            $table->integer('nombre_eleves')->nullable();
             $table->timestamps();
         });
     }

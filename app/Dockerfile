@@ -64,6 +64,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache
 
 RUN curl -o /var/www/python_scripts/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+RUN curl -o /var/www/python_scripts/mongo-spark-connector_2.12-10.3.0.jar https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.3.0/mongo-spark-connector_2.12-10.3.0-all.jar
 
 # Expose ports for Nginx and PHP-FPM
 EXPOSE 80

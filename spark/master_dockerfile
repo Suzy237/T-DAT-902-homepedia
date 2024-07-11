@@ -31,8 +31,11 @@ RUN chmod +x /opt/init_hdfs.sh
 
 USER 1001
 
-# Install https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
-RUN curl -o /opt/bitnami/spark/jars/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+# # Install https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+# RUN curl -o /opt/bitnami/spark/jars/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+
+# # Install MongoDB Spark Connector
+# RUN curl -o /opt/bitnami/spark/jars/mongo-spark-connector_2.12-3.0.0.jar https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/3.0.0/mongo-spark-connector_2.12-3.0.0.jar
 
 # Set entrypoint to run the initialization script first
 ENTRYPOINT ["/bin/bash", "-c", "cd /opt && ./init_hdfs.sh && /opt/bitnami/scripts/spark/entrypoint.sh /opt/bitnami/scripts/spark/run.sh"]

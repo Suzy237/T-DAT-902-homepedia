@@ -10,7 +10,7 @@ RUN echo "spark.eventLog.dir /opt/spark/spark-events" >> /opt/bitnami/spark/conf
 
 USER 1001
 
-# Install https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
-RUN curl -o /opt/bitnami/spark/jars/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+# # Install https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+# RUN curl -o /opt/bitnami/spark/jars/postgresql-42.7.3.jar https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
 
 ENTRYPOINT ["/bin/bash", "-c", "/opt/bitnami/scripts/spark/entrypoint.sh /opt/bitnami/scripts/spark/run.sh && spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077"]

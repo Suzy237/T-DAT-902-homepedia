@@ -15,12 +15,13 @@ mongo_db = os.getenv('MONGO_DB')
 mongo_user = os.getenv('MONGO_USER')
 mongo_password = os.getenv('MONGO_PASSWORD')
 
-# Initialize Spark session with PostgreSQL JDBC driver
+# Initialize Spark session with PostgreSQL JDBC driver and MongoDB Spark Connector
 spark = SparkSession.builder \
     .appName("Housing Market Data Processing") \
     .master(os.getenv('SPARK_MASTER')) \
+    .config("spark.mongodb.input.uri", f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/{mongo_db}.safety") \
     .config("spark.mongodb.output.uri", f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/{mongo_db}.safety") \
-    .config("spark.jars", "/var/www/python_scripts/postgresql-42.7.3.jar") \
+    .config("spark.jars", "/var/www/python_scripts/postgresql-42.7.3.jar,/var/www/python_scripts/mongo-spark-connector_2.12-10.3.0-all.jar") \
     .getOrCreate()
 
 # File paths on HDFS

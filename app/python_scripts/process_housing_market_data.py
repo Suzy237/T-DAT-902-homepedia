@@ -1,9 +1,10 @@
+
 import os
 import json
 import urllib.parse
 import psycopg2
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp
+from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, lit, broadcast
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, MapType, DecimalType
 
 # Define the schema for city_data_df
@@ -110,6 +111,7 @@ spark = SparkSession.builder \
     .config("spark.mongodb.input.uri", f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/{mongo_db}.safety") \
     .config("spark.mongodb.output.uri", f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/{mongo_db}.safety") \
     .config("spark.jars", "/var/www/downloads/postgresql-42.7.3.jar,/var/www/downloads/mongo-spark-connector_2.12-10.3.0-all.jar") \
+    .config("spark.sql.shuffle.partitions", "200") \
     .getOrCreate()
 
 # Function to execute SQL statements
@@ -157,8 +159,11 @@ def clean_column_names(df):
 safety_df = clean_column_names(safety_df)
 cartography_df = clean_column_names(cartography_df)
 
-# Join safety data with cartography data to get 'nom_commune'
-safety_df = safety_df.join(cartography_df, safety_df['CODGEO_2023'] == cartography_df['code_commune_INSEE'], 'inner')
+# Cache DataFrames
+cartography_df.cache()
+
+# Broadcast join cartography_df if it's small
+safety_df = safety_df.join(broadcast(cartography_df), safety_df['CODGEO_2023'] == cartography_df['code_commune_INSEE'], 'inner')
 
 # Process and transform data
 avg_cost_df = real_estate_df.groupBy("Commune").agg(mean("Valeur fonciere").alias("average_cost"))
@@ -167,9 +172,6 @@ safety_rate_df = safety_df.groupBy("nom_commune").agg(mean("tauxpourmille").alia
 
 # Convert 'Date mutation' column to date type
 real_estate_df = real_estate_df.withColumn("Date mutation", to_date(col("Date mutation"), "dd/MM/yyyy"))
-
-# Print the schema of the safety_df and real_estate_df to verify column names
-safety_df.printSchema()
 
 # Ensure the real_estate_df columns match the database schema
 real_estate_df = real_estate_df.select(
@@ -226,46 +228,29 @@ safety_rate_df = safety_df.withColumn(
     col("tauxpourmille"),
 )
 
+# Add created_at and updated_at columns
+current_timestamp_col = current_timestamp()
+safety_rate_df = safety_rate_df.withColumn("created_at", current_timestamp_col).withColumn("updated_at", current_timestamp_col)
+cartography_df = cartography_df.withColumn("created_at", current_timestamp_col).withColumn("updated_at", current_timestamp_col)
+real_estate_df = real_estate_df.withColumn("created_at", current_timestamp_col).withColumn("updated_at", current_timestamp_col)
+schools_df = schools_df.withColumn("created_at", current_timestamp_col).withColumn("updated_at", current_timestamp_col)
+
 # Save to PostgreSQL using append mode
-safety_rate_df.write \
-    .format("jdbc") \
-    .option("url", f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}") \
-    .option("dbtable", "safety_data") \
-    .option("user", pg_user) \
-    .option("password", pg_password) \
-    .option("driver", "org.postgresql.Driver") \
-    .mode("append") \
-    .save()
+def save_to_postgresql(df, table_name):
+    df.write \
+        .format("jdbc") \
+        .option("url", f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}") \
+        .option("dbtable", table_name) \
+        .option("user", pg_user) \
+        .option("password", pg_password) \
+        .option("driver", "org.postgresql.Driver") \
+        .mode("append") \
+        .save()
 
-cartography_df.write \
-    .format("jdbc") \
-    .option("url", f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}") \
-    .option("dbtable", "cartography") \
-    .option("user", pg_user) \
-    .option("password", pg_password) \
-    .option("driver", "org.postgresql.Driver") \
-    .mode("append") \
-    .save()
-
-real_estate_df.write \
-    .format("jdbc") \
-    .option("url", f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}") \
-    .option("dbtable", "real_estate") \
-    .option("user", pg_user) \
-    .option("password", pg_password) \
-    .option("driver", "org.postgresql.Driver") \
-    .mode("append") \
-    .save()
-
-schools_df.write \
-    .format("jdbc") \
-    .option("url", f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}") \
-    .option("dbtable", "schools") \
-    .option("user", pg_user) \
-    .option("password", pg_password) \
-    .option("driver", "org.postgresql.Driver") \
-    .mode("append") \
-    .save()
+save_to_postgresql(safety_rate_df, "safety_data")
+save_to_postgresql(cartography_df, "cartography")
+save_to_postgresql(real_estate_df, "real_estate")
+save_to_postgresql(schools_df, "schools")
 
 # Save to MongoDB
 city_data_df.write \
@@ -283,8 +268,3 @@ print(json.dumps({
 }))
 
 spark.stop()
-
-# Add created_at and updated_at columns to all the entries
-execute_sql("UPDATE safety_data SET created_at = NOW(), updated_at = NOW()")
-execute_sql("UPDATE cartography SET created_at = NOW(), updated_at = NOW()")
-execute_sql("UPDATE real_estate SET created_at = NOW(), updated_at = NOW()")

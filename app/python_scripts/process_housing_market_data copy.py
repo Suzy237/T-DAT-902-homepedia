@@ -1,12 +1,12 @@
 import os
 import json
 import urllib.parse
-import psycopg2
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, MapType, DecimalType
+from pyspark.sql.functions import mean, col, to_date
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, MapType
 
-# Define the schema for city_data_df
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, MapType
+
 city_data_df_schema = StructType([
     StructField("geocoordinates", StructType([
         StructField("latitude", StringType(), True),
@@ -91,6 +91,8 @@ city_data_df_schema = StructType([
     ]), True)
 ])
 
+
+
 # Read environment variables
 pg_host = os.getenv('DB_HOST')
 pg_port = os.getenv('DB_PORT')
@@ -112,27 +114,6 @@ spark = SparkSession.builder \
     .config("spark.jars", "/var/www/downloads/postgresql-42.7.3.jar,/var/www/downloads/mongo-spark-connector_2.12-10.3.0-all.jar") \
     .getOrCreate()
 
-# Function to execute SQL statements
-def execute_sql(sql):
-    conn = psycopg2.connect(
-        dbname=pg_database,
-        user=pg_user,
-        password=pg_password,
-        host=pg_host,
-        port=pg_port
-    )
-    cur = conn.cursor()
-    cur.execute(sql)
-    conn.commit()
-    cur.close()
-    conn.close()
-
-# Clear PostgreSQL tables before inserting new data
-execute_sql("DELETE FROM safety_data")
-execute_sql("DELETE FROM cartography")
-execute_sql("DELETE FROM real_estate")
-execute_sql("DELETE FROM schools")
-
 # File paths on HDFS
 real_estate_path = 'hdfs://namenode:8020/csv_data/france_total_real_estate_sales_2022.csv'
 cartography_path = 'hdfs://namenode:8020/csv_data/france_cartography_data.csv'
@@ -144,8 +125,14 @@ city_data_path = 'hdfs://namenode:8020/csv_data/city_data.json'
 real_estate_df = spark.read.csv(real_estate_path, header=True, inferSchema=True, sep=',')
 cartography_df = spark.read.csv(cartography_path, header=True, inferSchema=True, sep=',')
 schools_df = spark.read.csv(schools_path, header=True, inferSchema=True, sep=';')
-safety_df = spark.read.csv(safety_path, header=True, inferSchema=True, sep=';')
+safety_df = spark.read.option("header", "true").csv(safety_path, inferSchema=True, sep=';')
 city_data_df = spark.read.option("multiline", "true").schema(city_data_df_schema).json(city_data_path)
+
+# Print the schema of the safety_df and real_estate_df to verify column names
+safety_df.printSchema()
+cartography_df.printSchema()
+real_estate_df.printSchema()
+city_data_df.printSchema()
 
 # Clean column names to remove any leading/trailing whitespace and replace special characters
 def clean_column_names(df):
@@ -157,19 +144,21 @@ def clean_column_names(df):
 safety_df = clean_column_names(safety_df)
 cartography_df = clean_column_names(cartography_df)
 
+# Verify cleaned column names
+safety_df.printSchema()
+cartography_df.printSchema()
+
 # Join safety data with cartography data to get 'nom_commune'
 safety_df = safety_df.join(cartography_df, safety_df['CODGEO_2023'] == cartography_df['code_commune_INSEE'], 'inner')
 
 # Process and transform data
 avg_cost_df = real_estate_df.groupBy("Commune").agg(mean("Valeur fonciere").alias("average_cost"))
 school_count_df = schools_df.groupBy("nom_commune").count().withColumnRenamed("count", "school_count")
+
 safety_rate_df = safety_df.groupBy("nom_commune").agg(mean("tauxpourmille").alias("safety_rate"))
 
 # Convert 'Date mutation' column to date type
 real_estate_df = real_estate_df.withColumn("Date mutation", to_date(col("Date mutation"), "dd/MM/yyyy"))
-
-# Print the schema of the safety_df and real_estate_df to verify column names
-safety_df.printSchema()
 
 # Ensure the real_estate_df columns match the database schema
 real_estate_df = real_estate_df.select(
@@ -183,7 +172,7 @@ real_estate_df = real_estate_df.select(
     col("Code commune").alias("commune_code"),
     col("Surface reelle bati").alias("surface_reelle_bati"),
     col("Nombre pieces principales").alias("nombre_pieces"),
-    col("Surface terrain").alias("surface_terrain"),
+    col("Surface terrain").alias("surface_terrain")
 )
 
 # Rename columns in schools_df to match PostgreSQL table schema
@@ -197,7 +186,7 @@ schools_df = schools_df.select(
     col("nom_commune").alias("commune"),
     col("code_departement").alias("department_code"),
     col("code_region").alias("region_code"),
-    col("nombre_d_eleves").alias("nombre_eleves").cast("int"),
+    col("nombre_d_eleves").alias("nombre_eleves").cast("int")
 )
 
 # Rename columns in cartography_df to match PostgreSQL table schema
@@ -208,45 +197,10 @@ cartography_df = cartography_df.select(
     col("libelle_acheminement"),
     col("latitude").cast("decimal(10,8)"),
     col("longitude").cast("decimal(11,8)"),
-    col("nom_region"),
+    col("nom_region")
 )
 
-# Fix the tauxpourmille column and ensure it is properly formatted
-safety_rate_df = safety_df.withColumn(
-    "tauxpourmille",
-    regexp_replace(col("tauxpourmille"), ",", ".").cast(DecimalType(20, 10))
-).select(
-    col("annee").cast("int"),
-    col("classe"),
-    col("unité_de_compte").alias("unite_de_compte"),
-    col("valeur_publiée").alias("valeur_publiee").cast("decimal(15,2)"),
-    col("faits").cast("int"),
-    col("nom_commune"),
-    col("code_postal"),
-    col("tauxpourmille"),
-)
-
-# Save to PostgreSQL using append mode
-safety_rate_df.write \
-    .format("jdbc") \
-    .option("url", f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}") \
-    .option("dbtable", "safety_data") \
-    .option("user", pg_user) \
-    .option("password", pg_password) \
-    .option("driver", "org.postgresql.Driver") \
-    .mode("append") \
-    .save()
-
-cartography_df.write \
-    .format("jdbc") \
-    .option("url", f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}") \
-    .option("dbtable", "cartography") \
-    .option("user", pg_user) \
-    .option("password", pg_password) \
-    .option("driver", "org.postgresql.Driver") \
-    .mode("append") \
-    .save()
-
+# Save to PostgreSQL
 real_estate_df.write \
     .format("jdbc") \
     .option("url", f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}") \
@@ -254,7 +208,7 @@ real_estate_df.write \
     .option("user", pg_user) \
     .option("password", pg_password) \
     .option("driver", "org.postgresql.Driver") \
-    .mode("append") \
+    .mode("overwrite") \
     .save()
 
 schools_df.write \
@@ -264,10 +218,28 @@ schools_df.write \
     .option("user", pg_user) \
     .option("password", pg_password) \
     .option("driver", "org.postgresql.Driver") \
-    .mode("append") \
+    .mode("overwrite") \
+    .save()
+
+cartography_df.write \
+    .format("jdbc") \
+    .option("url", f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}") \
+    .option("dbtable", "cartography") \
+    .option("user", pg_user) \
+    .option("password", pg_password) \
+    .option("driver", "org.postgresql.Driver") \
+    .mode("overwrite") \
     .save()
 
 # Save to MongoDB
+safety_df.write \
+    .format("mongodb") \
+    .mode("overwrite") \
+    .option("connection.uri", f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}") \
+    .option("database", mongo_db) \
+    .option("collection", "safety") \
+    .save()
+
 city_data_df.write \
     .format("mongodb") \
     .mode("overwrite") \
@@ -283,8 +255,3 @@ print(json.dumps({
 }))
 
 spark.stop()
-
-# Add created_at and updated_at columns to all the entries
-execute_sql("UPDATE safety_data SET created_at = NOW(), updated_at = NOW()")
-execute_sql("UPDATE cartography SET created_at = NOW(), updated_at = NOW()")
-execute_sql("UPDATE real_estate SET created_at = NOW(), updated_at = NOW()")

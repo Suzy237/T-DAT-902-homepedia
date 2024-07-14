@@ -15,8 +15,10 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-requests \
+    python3-psycopg2 \
     procps \
     openjdk-17-jdk \
+    nano \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Add Java bin to PATH

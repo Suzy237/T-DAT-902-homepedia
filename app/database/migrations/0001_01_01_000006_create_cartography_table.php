@@ -19,10 +19,6 @@ class CreateCartographyTable extends Migration
             $table->string('nom_region')->nullable();
             $table->timestamps();
         });
-
-        Schema::table('cartography', function (Blueprint $table) {
-            $table->index('code_commune_INSEE');
-        });
     }
 
     public function down()

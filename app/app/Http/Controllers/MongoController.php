@@ -16,8 +16,8 @@ class MongoController extends Controller
 
     public function __construct()
     {
-        $this->client = new MongoClient('mongodb://mongo:27017');
-        $this->db = $this->client->selectDatabase('housing');
+        $this->client = new MongoClient('mongodb://' . env('MONGO_HOST') . ':' . env('MONGO_PORT'));
+        $this->db = $this->client->selectDatabase(env('MONGO_DB'));
         $this->safetyCollection = $this->db->selectCollection('safety');
     }
 

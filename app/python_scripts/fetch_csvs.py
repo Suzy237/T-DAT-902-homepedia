@@ -56,7 +56,8 @@ def send_pre_existing_files():
 urls = [
     ("https://www.data.gouv.fr/fr/datasets/r/dbe8a621-a9c4-4bc3-9cae-be1699c5ff25", "france_cartography_data.csv"),
     ("https://www.data.gouv.fr/fr/datasets/r/b22f04bf-64a8-495d-b8bb-d84dbc4c7983", "france_schools_data.csv"),
-    ("https://www.data.gouv.fr/fr/datasets/r/3f51212c-f7d2-4aec-b899-06be6cdd1030", "france_safety_rate_data.csv.gz")
+    ("https://www.data.gouv.fr/fr/datasets/r/3f51212c-f7d2-4aec-b899-06be6cdd1030", "france_safety_rate_data.csv.gz"),
+    ("https://www.data.gouv.fr/fr/datasets/r/987227fb-dcb2-429e-96af-8979f97c9c84", "france_department_list.csv")
 ]
 
 # Function to download file

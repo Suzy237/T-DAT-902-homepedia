@@ -3,8 +3,8 @@ import json
 import urllib.parse
 import psycopg2
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, lit, broadcast, lpad
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, MapType, DecimalType
+from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, when, broadcast, lpad
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, MapType, DecimalType
 
 
 # Define the schema for city_data_df
@@ -182,14 +182,22 @@ real_estate_df = real_estate_df.select(
     col("Date mutation").alias("mutation_date"),
     col("Nature mutation").alias("nature_mutation"),
     col("Valeur fonciere").alias("valeur_fonciere").cast("double"),
+    col("Code postal").alias("postal_code"),
     col("No voie").alias("address"),
-    lpad(col("Code postal"), 5, '0').alias("postal_code"),
     col("Commune").alias("commune"),
     col("Code departement").alias("department_code"),
     col("Code commune").alias("commune_code"),
     col("Surface reelle bati").alias("surface_reelle_bati"),
     col("Nombre pieces principales").alias("nombre_pieces"),
     col("Surface terrain").alias("surface_terrain"),
+)
+real_estate_df = real_estate_df.withColumn(
+    "postal_code",
+    when(col("postal_code").contains("."),
+         lpad(regexp_replace(col("postal_code"), "\\.0$", ""), 5, '0')
+    ).otherwise(
+         lpad(col("postal_code"), 5, '0')
+    )
 )
 
 # Rename columns in schools_df to match PostgreSQL table schema

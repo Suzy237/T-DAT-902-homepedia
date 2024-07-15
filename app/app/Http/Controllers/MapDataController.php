@@ -31,18 +31,18 @@ class MapDataController extends Controller
 
     public function getLocationDetails($id)
     {
-        // Adjust this query based on how you identify your locations (id or other identifier)
         $location = DB::table('cartography')
-            ->leftJoin('real_estate', 'cartography.code_commune_INSEE', '=', 'real_estate.commune_code')
-            ->leftJoin('schools', 'cartography.code_commune_INSEE', '=', 'schools.postal_code')
-            ->leftJoin('safety_data', 'cartography.code_commune_INSEE', '=', 'safety_data.code_postal')
-            ->where('cartography.code_commune_INSEE', $id)
+            ->leftJoin('real_estate', 'cartography.code_postal', '=', 'real_estate.commune_code')
+            ->leftJoin('schools', 'cartography.code_postal', '=', 'schools.postal_code')
+            ->leftJoin('safety_data', 'cartography.code_postal', '=', 'safety_data.code_postal')
+            ->where('cartography.code_postal', $id)
             ->select(
                 'cartography.nom_commune_postal',
-                'real_estate.average_cost',
-                'safety_data.safety_rate',
+                DB::raw('AVG(real_estate.average_cost) as average_cost'),
+                DB::raw('AVG(safety_data.safety_rate) as safety_rate'),
                 DB::raw('COUNT(schools.id) as school_count')
             )
+            ->groupBy('cartography.nom_commune_postal')
             ->first();
 
         return response()->json($location);

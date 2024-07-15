@@ -17,6 +17,8 @@ class CreateCartographyTable extends Migration
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
             $table->string('nom_region')->nullable();
+            $table->decimal('average_cost', 15, 2)->nullable();
+            $table->decimal('safety_rate', 20, 10)->nullable();
             $table->timestamps();
         });
     }

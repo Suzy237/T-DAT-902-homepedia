@@ -1,4 +1,3 @@
-
 import os
 import json
 import urllib.parse
@@ -6,6 +5,7 @@ import psycopg2
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, lit, broadcast
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, MapType, DecimalType
+
 
 # Define the schema for city_data_df
 city_data_df_schema = StructType([
@@ -134,6 +134,7 @@ execute_sql("DELETE FROM safety_data")
 execute_sql("DELETE FROM cartography")
 execute_sql("DELETE FROM real_estate")
 execute_sql("DELETE FROM schools")
+execute_sql("DELETE FROM departements")
 
 # File paths on HDFS
 real_estate_path = 'hdfs://namenode:8020/csv_data/france_total_real_estate_sales_2022.csv'
@@ -141,6 +142,7 @@ cartography_path = 'hdfs://namenode:8020/csv_data/france_cartography_data.csv'
 schools_path = 'hdfs://namenode:8020/csv_data/france_schools_data.csv'
 safety_path = 'hdfs://namenode:8020/csv_data/france_safety_rate_data.csv.gz'
 city_data_path = 'hdfs://namenode:8020/csv_data/city_data.json'
+departments_path = 'hdfs://namenode:8020/csv_data/france_department_list.csv'
 
 # Read CSV files with specified delimiter
 real_estate_df = spark.read.csv(real_estate_path, header=True, inferSchema=True, sep=',')
@@ -148,6 +150,7 @@ cartography_df = spark.read.csv(cartography_path, header=True, inferSchema=True,
 schools_df = spark.read.csv(schools_path, header=True, inferSchema=True, sep=';')
 safety_df = spark.read.csv(safety_path, header=True, inferSchema=True, sep=';')
 city_data_df = spark.read.option("multiline", "true").schema(city_data_df_schema).json(city_data_path)
+departments_df = spark.read.csv(departments_path, header=True, inferSchema=True, sep=',')
 
 # Clean column names to remove any leading/trailing whitespace and replace special characters
 def clean_column_names(df):
@@ -158,6 +161,7 @@ def clean_column_names(df):
 
 safety_df = clean_column_names(safety_df)
 cartography_df = clean_column_names(cartography_df)
+departments_df = clean_column_names(departments_df)
 
 # Cache DataFrames
 cartography_df.cache()
@@ -213,6 +217,13 @@ cartography_df = cartography_df.select(
     col("nom_region"),
 )
 
+# Rename columns in departments_df to match PostgreSQL table schema
+departments_df = departments_df.select(
+    col("num_dep").alias("num_dep"),
+    col("dep_name").alias("dep_name"),
+    col("region_name").alias("region_name"),
+)
+
 # Fix the tauxpourmille column and ensure it is properly formatted
 safety_rate_df = safety_df.withColumn(
     "tauxpourmille",
@@ -234,6 +245,7 @@ safety_rate_df = safety_rate_df.withColumn("created_at", current_timestamp_col).
 cartography_df = cartography_df.withColumn("created_at", current_timestamp_col).withColumn("updated_at", current_timestamp_col)
 real_estate_df = real_estate_df.withColumn("created_at", current_timestamp_col).withColumn("updated_at", current_timestamp_col)
 schools_df = schools_df.withColumn("created_at", current_timestamp_col).withColumn("updated_at", current_timestamp_col)
+departments_df = departments_df.withColumn("created_at", current_timestamp_col).withColumn("updated_at", current_timestamp_col)
 
 # Save to PostgreSQL using append mode
 def save_to_postgresql(df, table_name):
@@ -251,6 +263,7 @@ save_to_postgresql(safety_rate_df, "safety_data")
 save_to_postgresql(cartography_df, "cartography")
 save_to_postgresql(real_estate_df, "real_estate")
 save_to_postgresql(schools_df, "schools")
+save_to_postgresql(departments_df, "departements")
 
 # Save to MongoDB
 city_data_df.write \

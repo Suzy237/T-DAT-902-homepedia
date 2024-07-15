@@ -1,9 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import 'leaflet/dist/leaflet.css';
+import "leaflet/dist/leaflet.css";
+import axios from "axios";
 
-export default function Map({ data }) {
-    return null;
+export default function Map({ data, mode }) {
+    console.log({ data })
+    const [selectedLocation, setSelectedLocation] = useState(null);
+
+    const handleMarkerClick = async (locationId) => {
+        try {
+            const response = await axios.get(`/location/${locationId}`);
+            setSelectedLocation(response.data);
+        } catch (error) {
+            console.error("Error fetching location details:", error);
+        }
+    };
+
     return (
         <MapContainer
             center={[48.8566, 2.3522]}
@@ -14,18 +26,26 @@ export default function Map({ data }) {
             {data.map((location) => (
                 <Marker
                     key={location.id}
-                    position={[location.latitude, location.longitude]}
+                    position={[+location.latitude, +location.longitude]}
+                    eventHandlers={{
+                        click: () => handleMarkerClick(location.code_commune_INSEE),
+                    }}
                 >
                     <Popup>
                         <div>
-                            {/* <h3>{location.name}</h3>
-                            <p>Average Cost: {location.average_cost}</p>
-                            <p>Criminality Rate: {location.criminality_rate}</p>
-                            <p>Good Schools: {location.good_schools_rate}</p>
-                            <p>Hospitals: {location.hospitals_count}</p>
-                            <p>Best Cities Index: {location.best_cities_index}</p>
-                            <p>Population: {location.population}</p>
-                            <p>Density: {location.density}</p> */}
+                            <h3 className="font-bold">
+                                {mode === "department"
+                                    ? location.dep_name :
+                                    location.nom_commune_postal
+                                }
+                            </h3>
+                            {selectedLocation && (
+                                <div>
+                                    <p>Average Cost: {selectedLocation.average_cost}</p>
+                                    <p>Criminality Rate: {selectedLocation.safety_rate}</p>
+                                    <p>School Count: {selectedLocation.school_count}</p>
+                                </div>
+                            )}
                         </div>
                     </Popup>
                 </Marker>

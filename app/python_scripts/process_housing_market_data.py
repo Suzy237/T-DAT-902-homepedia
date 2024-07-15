@@ -183,7 +183,7 @@ real_estate_df = real_estate_df.select(
     col("Nature mutation").alias("nature_mutation"),
     col("Valeur fonciere").alias("valeur_fonciere").cast("double"),
     col("No voie").alias("address"),
-    col("Code postal").alias("postal_code"),
+    lpad(col("Code postal"), 5, '0').alias("postal_code"),
     col("Commune").alias("commune"),
     col("Code departement").alias("department_code"),
     col("Code commune").alias("commune_code"),

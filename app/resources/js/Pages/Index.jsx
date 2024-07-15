@@ -3,81 +3,18 @@ import { Link, Head } from "@inertiajs/react";
 import Map from "@/Components/Map";
 import React, { useState, useEffect } from "react";
 
-export default function Index({ auth, departments }) {
+export default function Index({ auth, departments, cities }) {
     const [mode, setMode] = useState("department");
     const [data, setData] = useState([]);
 
     useEffect(() => {
-        const cityData = [
-            {
-                id: 1,
-                name: "Paris",
-                latitude: 48.8566,
-                longitude: 2.3522,
-                average_cost: 1200,
-                criminality_rate: 0.6,
-                good_schools_rate: 0.8,
-                hospitals_count: 10,
-                best_cities_index: 0.9,
-                population: 1000000,
-                density: 20000,
-            },
-            {
-                id: 2,
-                name: "Marseille",
-                latitude: 43.2965,
-                longitude: 5.3698,
-                average_cost: 800,
-                criminality_rate: 0.8,
-                good_schools_rate: 0.6,
-                hospitals_count: 5,
-                best_cities_index: 0.7,
-                population: 500000,
-                density: 10000,
-            },
-            {
-                id: 3,
-                name: "Lyon",
-                latitude: 45.75,
-                longitude: 4.85,
-                average_cost: 1000,
-                criminality_rate: 0.7,
-                good_schools_rate: 0.7,
-                hospitals_count: 8,
-                best_cities_index: 0.8,
-                population: 700000,
-                density: 15000,
-            },
-            {
-                id: 4,
-                name: "Toulouse",
-                latitude: 43.6045,
-                longitude: 1.4442,
-                average_cost: 700,
-                criminality_rate: 0.5,
-                good_schools_rate: 0.9,
-                hospitals_count: 6,
-                best_cities_index: 0.8,
-                population: 400000,
-                density: 8000,
-            },
-            {
-                id: 5,
-                name: "Nice",
-                latitude: 43.7102,
-                longitude: 7.262,
-                average_cost: 900,
-                criminality_rate: 0.6,
-                good_schools_rate: 0.7,
-                hospitals_count: 4,
-                best_cities_index: 0.7,
-                population: 300000,
-                density: 6000,
-            },
-        ];
-
-        setData(mode === "city" ? cityData : departments);
-        console.log("departments", departments);
+        // get every city with an index multiple of 500.
+        // Steve didn't do his job so I had to improvise
+        const citySlice = cities.map((e, i) => {
+            if ((i % 500) != 0) return;
+            return e;
+        }).filter(Boolean)
+        setData(mode === "city" ? citySlice : departments);
     }, [mode]);
 
     return (
@@ -148,7 +85,7 @@ export default function Index({ auth, departments }) {
                                             Search
                                         </button>
                                         <div className="mt-8 w-full">
-                                            <Map data={data} />
+                                            <Map data={data} mode={mode} />
                                         </div>
                                     </div>
                                 </div>

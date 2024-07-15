@@ -6,8 +6,13 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\IndexController;
+use App\Http\Controllers\MapDataController;
 
 Route::get('/', [IndexController::class, 'index'])->name('home');
+
+Route::get('/departments', [MapDataController::class, 'getDepartments']);
+Route::get('/cities', [MapDataController::class, 'getCities']);
+Route::get('/location/{id}', [MapDataController::class, 'getLocationDetails']);
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

@@ -3,7 +3,7 @@ import json
 import urllib.parse
 import psycopg2
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, lit, broadcast
+from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, lit, broadcast, lpad
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, MapType, DecimalType
 
 
@@ -183,7 +183,7 @@ real_estate_df = real_estate_df.select(
     col("Nature mutation").alias("nature_mutation"),
     col("Valeur fonciere").alias("valeur_fonciere").cast("double"),
     col("No voie").alias("address"),
-    col("Code postal").alias("postal_code").cast("int"),
+    col("Code postal").alias("postal_code"),
     col("Commune").alias("commune"),
     col("Code departement").alias("department_code"),
     col("Code commune").alias("commune_code"),
@@ -208,9 +208,9 @@ schools_df = schools_df.select(
 
 # Rename columns in cartography_df to match PostgreSQL table schema
 cartography_df = cartography_df.select(
-    col("code_commune_INSEE"),
+    lpad(col("code_commune_INSEE"), 5, '0').alias("code_commune_INSEE"),
     col("nom_commune_postal"),
-    col("code_postal"),
+    lpad(col("code_postal"), 5, '0').alias("code_postal"),
     col("libelle_acheminement"),
     col("latitude").cast("decimal(10,8)"),
     col("longitude").cast("decimal(11,8)"),

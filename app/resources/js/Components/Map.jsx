@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import 'leaflet/dist/leaflet.css';
 
 export default function Map({ data }) {
+    return null;
     return (
         <MapContainer
             center={[48.8566, 2.3522]}
@@ -17,14 +18,14 @@ export default function Map({ data }) {
                 >
                     <Popup>
                         <div>
-                            <h3>{location.name}</h3>
+                            {/* <h3>{location.name}</h3>
                             <p>Average Cost: {location.average_cost}</p>
                             <p>Criminality Rate: {location.criminality_rate}</p>
                             <p>Good Schools: {location.good_schools_rate}</p>
                             <p>Hospitals: {location.hospitals_count}</p>
                             <p>Best Cities Index: {location.best_cities_index}</p>
                             <p>Population: {location.population}</p>
-                            <p>Density: {location.density}</p>
+                            <p>Density: {location.density}</p> */}
                         </div>
                     </Popup>
                 </Marker>

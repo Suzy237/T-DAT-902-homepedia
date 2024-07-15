@@ -16,7 +16,7 @@ class CreateSafetyDataTable extends Migration
             $table->decimal('valeur_publiee', 15, 2)->nullable();
             $table->integer('faits')->nullable();
             $table->string('nom_commune')->nullable();
-            $table->string('code_postal', 5)->nullable();
+            $table->string('code_postal')->nullable();
             $table->decimal('tauxpourmille', 20, 10)->nullable();
             $table->timestamps();
         });

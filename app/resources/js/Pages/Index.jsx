@@ -3,7 +3,7 @@ import { Link, Head } from "@inertiajs/react";
 import Map from "@/Components/Map";
 import React, { useState, useEffect } from "react";
 
-export default function Index({ auth }) {
+export default function Index({ auth, departments }) {
     const [mode, setMode] = useState("department");
     const [data, setData] = useState([]);
 
@@ -76,49 +76,8 @@ export default function Index({ auth }) {
             },
         ];
 
-        const departmentData = [
-            {
-                id: 1,
-                name: "Île-de-France",
-                latitude: 48.8566,
-                longitude: 2.3522,
-                average_cost: 1300,
-                criminality_rate: 0.5,
-                good_schools_rate: 0.9,
-                hospitals_count: 15,
-                best_cities_index: 0.9,
-                population: 12000000,
-                density: 1000,
-            },
-            {
-                id: 2,
-                name: "Provence-Alpes-Côte d'Azur",
-                latitude: 43.9351,
-                longitude: 6.0679,
-                average_cost: 900,
-                criminality_rate: 0.7,
-                good_schools_rate: 0.7,
-                hospitals_count: 8,
-                best_cities_index: 0.8,
-                population: 5000000,
-                density: 200,
-            },
-            {
-                id: 3,
-                name: "Auvergne-Rhône-Alpes",
-                latitude: 45.5646,
-                longitude: 5.922,
-                average_cost: 950,
-                criminality_rate: 0.6,
-                good_schools_rate: 0.8,
-                hospitals_count: 10,
-                best_cities_index: 0.85,
-                population: 8000000,
-                density: 150,
-            },
-        ];
-
-        setData(mode === "city" ? cityData : departmentData);
+        setData(mode === "city" ? cityData : departments);
+        console.log("departments", departments);
     }, [mode]);
 
     return (

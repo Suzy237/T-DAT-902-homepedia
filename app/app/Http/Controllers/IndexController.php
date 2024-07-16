@@ -6,9 +6,31 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Http\Request;
 
 class IndexController extends Controller
 {
+    public function getLogs(Request $request)
+    {
+        if (!$request->user()->is_admin) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        $filePath = env('APP_ENV') === 'production' ? '/var/www/startup.log' : '/Users/user/wac/msc/homepedia/startup.log';
+
+        // Check if the log file exists
+        if (!File::exists($filePath)) {
+            return response()->json(['error' => 'Log file not found.'], 404);
+        }
+
+        // Read the contents of the log file
+        $logs = File::get($filePath);
+
+        // Optionally, you can split the logs by line
+        $logs = explode("\n", $logs);
+
+        return response()->json(['logs' => $logs], 200);
+    }
     private function getDepartements()
     {
         $departments = DB::table('departements')

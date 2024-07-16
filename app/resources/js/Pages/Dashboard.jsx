@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import Admin from '@/Components/Admin';
 
 export default function Dashboard({ auth }) {
     return (
@@ -16,6 +17,11 @@ export default function Dashboard({ auth }) {
                     </div>
                 </div>
             </div>
+
+            {
+                auth?.user?.is_admin &&
+                <Admin />
+            }
         </AuthenticatedLayout>
     );
 }

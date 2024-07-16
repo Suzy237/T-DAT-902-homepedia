@@ -15,6 +15,8 @@ Route::get('/cities', [MapDataController::class, 'getCities']);
 Route::get('/location/{id}', [MapDataController::class, 'getLocationDetails']);
 Route::get('/city/{id}', [MapDataController::class, 'getCityDataFromMongoDB']);
 Route::get('/cities/{name}', [MapDataController::class, 'findCitiesByName']);
+Route::get('/logs', [IndexController::class, 'getLogs']);
+
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

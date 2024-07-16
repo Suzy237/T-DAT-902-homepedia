@@ -72,4 +72,5 @@ RUN curl -o /var/www/downloads/mongo-spark-connector_2.12-10.3.0-all.jar https:/
 EXPOSE 80
 
 # Start Nginx and PHP-FPM
-CMD service nginx start && php-fpm
+# CMD service nginx start && php-fpm
+CMD service nginx start > /var/startup.log 2>&1 && php-fpm >> /var/startup.log 2>&1

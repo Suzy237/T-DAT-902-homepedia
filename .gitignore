@@ -2,3 +2,5 @@ postgres/
 mongo/
 namenode/
 datanode/
+startup.log
+app/.env

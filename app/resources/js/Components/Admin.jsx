@@ -13,6 +13,7 @@ export default function Admin() {
     async function fetchCSVs() {
         try {
             fetch("/fetch-csvs");
+            logFetcher();
         }
         catch (error) {
             console.error("Error fetching CSV:", error);
@@ -22,6 +23,7 @@ export default function Admin() {
     async function processData() {
         try {
             fetch("/process-data");
+            logFetcher();
         }
         catch (error) {
             console.error("Error processing data:", error);

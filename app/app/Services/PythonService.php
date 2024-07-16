@@ -24,6 +24,9 @@ class PythonService
         $returnVar = null;
         exec("python3 $scriptPath", $output, $returnVar);
 
+        // write the output to the log
+        Log::info('Python script output: ', ['output' => $output]);
+
         if ($returnVar !== 0) {
             Log::error('Failed to execute Python script: ', ['output' => $output]);
             throw new RuntimeException('Failed to execute Python script: ' . implode("\n", $output));

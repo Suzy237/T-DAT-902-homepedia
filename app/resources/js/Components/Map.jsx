@@ -1,65 +1,135 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
+import CityDetails from "./CityDetails";
 
-export default function Map({ data, mode }) {
-    console.log({ data });
-    const [selectedLocation, setSelectedLocation] = useState(null);
+const MapComponent = ({ data, mode, selected, setSelected }) => {
+    const mapRef = React.useRef();
 
-    const handleMarkerClick = async (locationId) => {
+    useEffect(() => {
+        if (selected) {
+            const { latitude, longitude } = data.find(location => location.code_postal === selected.code_postal) || {};
+            if (latitude && longitude) {
+                mapRef.current?.flyTo([latitude, longitude], 13);
+            } else {
+                console.error("Invalid selected location coordinates:", selected);
+            }
+        }
+    }, [selected, data]);
+
+    const handleMarkerClick = async (postalCode) => {
         try {
-            const response = await axios.get(`/location/${locationId}`);
-            setSelectedLocation(response.data);
+            const response = await axios.get(`/location/${postalCode}`);
+            const locationData = { ...response.data, postalCode };
+
+            try {
+                const cityResponse = await axios.get(`/city/${postalCode}`);
+                if (Object.keys(cityResponse.data).length > 0) {
+                    locationData.cityData = cityResponse.data;
+                }
+            } catch (error) {
+                console.error("Error fetching city details:", error);
+            }
+
+            if (locationData.latitude && locationData.longitude) {
+                // numerify the coordinates
+                locationData.latitude = +locationData.latitude;
+                locationData.longitude = +locationData.longitude;
+                setSelected(locationData);
+            } else {
+                console.error("Invalid marker click coordinates:", locationData);
+            }
         } catch (error) {
             console.error("Error fetching location details:", error);
         }
     };
 
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+    };
+
+    const formatSafetyRate = (rate) => {
+        const parsedRate = parseFloat(rate);
+        if (isNaN(parsedRate)) return "N/A";
+        if (parsedRate < 2) return <span style={{ color: "green" }}>Safe</span>;
+        if (parsedRate < 5) return <span style={{ color: "orange" }}>Moderate</span>;
+        return <span style={{ color: "red" }}>Dangerous</span>;
+    };
+
+    return (
+        <>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {data.map((location, i) => (
+                location.latitude && location.longitude ? (
+                    <Marker
+                        key={i}
+                        position={[+location.latitude, +location.longitude]}
+                        eventHandlers={{
+                            click: () => handleMarkerClick(location.code_postal),
+                        }}
+                    >
+                        <Popup>
+                            <div>
+                                <h3 className="font-bold">
+                                    {mode === "department"
+                                        ? location.dep_name
+                                        : location.nom_commune_postal}
+                                </h3>
+                                {selected && selected.postalCode === location.code_postal && (
+                                    <div>
+                                        <p>
+                                            <span className="font-bold">Average property cost: </span>
+                                            {selected.average_cost ? formatCurrency(selected.average_cost) : "N/A"}
+                                        </p>
+                                        <p>
+                                            <span className="font-bold">Safety rate: </span>
+                                            {formatSafetyRate(+selected.safety_rate)}
+                                        </p>
+                                        <p>
+                                            <span className="font-bold">School count: </span>
+                                            {selected.school_count}
+                                        </p>
+                                        {selected.cityData ? (
+                                            <CityDetails cityData={selected.cityData} />
+                                        ) : (
+                                            <p>No additional city data available.</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </Popup>
+                    </Marker>
+                ) : null
+            ))}
+        </>
+    );
+};
+
+const Map = forwardRef(({ data, mode, selectedLocation }, ref) => {
+    const [selected, setSelected] = useState(null);
+
+    useEffect(() => {
+        if (selectedLocation) {
+            setSelected(selectedLocation);
+        }
+    }, [selectedLocation]);
+
     return (
         <MapContainer
-            center={[48.8566, 2.3522]}
+            center={[46.603354, 1.888334]}
             zoom={6}
             style={{ height: "100vh", width: "100%" }}
+            ref={ref}
         >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {data.map((location) => (
-                <Marker
-                    key={location.id}
-                    position={[+location.latitude, +location.longitude]}
-                    eventHandlers={{
-                        click: () => handleMarkerClick(location.code_postal),
-                    }}
-                >
-                    <Popup>
-                        <div>
-                            <h3 className="font-bold">
-                                {mode === "department"
-                                    ? location.dep_name
-                                    : location.nom_commune_postal}
-                            </h3>
-                            {selectedLocation && (
-                                <div>
-                                    <p>
-                                        Average Cost:{" "}
-                                        {selectedLocation.average_cost}
-                                    </p>
-                                    <p>
-                                        Criminality Rate:{" "}
-                                        {selectedLocation.safety_rate > 0
-                                            ? selectedLocation.safety_rate
-                                            : "N/A"}
-                                    </p>
-                                    <p>
-                                        School Count:{" "}
-                                        {selectedLocation.school_count}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </Popup>
-                </Marker>
-            ))}
+            <MapComponent
+                data={data}
+                mode={mode}
+                selected={selected}
+                setSelected={setSelected}
+            />
         </MapContainer>
     );
-}
+});
+
+export default Map;

@@ -13,6 +13,8 @@ Route::get('/', [IndexController::class, 'index'])->name('home');
 Route::get('/departments', [MapDataController::class, 'getDepartments']);
 Route::get('/cities', [MapDataController::class, 'getCities']);
 Route::get('/location/{id}', [MapDataController::class, 'getLocationDetails']);
+Route::get('/city/{id}', [MapDataController::class, 'getCityDataFromMongoDB']);
+Route::get('/cities/{name}', [MapDataController::class, 'findCitiesByName']);
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

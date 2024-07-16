@@ -1,21 +1,59 @@
 import Navbar from "@/Components/Navbar";
 import { Link, Head } from "@inertiajs/react";
 import Map from "@/Components/Map";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 
 export default function Index({ auth, departments, cities }) {
     const [mode, setMode] = useState("department");
     const [data, setData] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedLocation, setSelectedLocation] = useState(null);
+    const [currentResultIndex, setCurrentResultIndex] = useState(0);
+    const [searchResults, setSearchResults] = useState([]);
+    const mapRef = useRef();
 
     useEffect(() => {
-        // get every city with an index multiple of 500.
-        // Steve didn't do his job so I had to improvise
-        const citySlice = cities.map((e, i) => {
-            if ((i % 500) != 0) return;
-            return e;
-        }).filter(Boolean)
+        if (searchTerm === "") {
+            const citySlice = cities.filter((e, i) => i % 500 === 0);
+            setData(mode === "city" ? citySlice : departments);
+        }
+    }, [mode, cities, departments, searchTerm]);
+
+    const handleSearch = async (event) => {
+        event.preventDefault();
+        if (searchTerm === "") {
+            handleClear();
+        } else {
+            try {
+                const response = await axios.get(`/cities/${searchTerm.replace(/['-]/g, " ")}`);
+                if (response.data && response.data.length > 0) {
+                    setSearchResults(response.data);
+                    setCurrentResultIndex(0);
+                    const firstResult = response.data[0];
+                    setSelectedLocation(firstResult);
+                    setData(response.data); // Display all search results on the map
+                    mapRef.current?.flyTo(
+                        [firstResult.latitude, firstResult.longitude],
+                        13
+                    );
+                } else {
+                    console.log("No results found");
+                }
+            } catch (error) {
+                console.error("Error fetching cities:", error);
+            }
+        }
+    };
+
+    const handleClear = () => {
+        setSearchTerm("");
+        setSelectedLocation(null);
+        setSearchResults([]);
+        const citySlice = cities.filter((e, i) => i % 500 === 0);
         setData(mode === "city" ? citySlice : departments);
-    }, [mode]);
+        mapRef.current?.setView([46.603354, 1.888334], 6); // Center of France
+    };
 
     return (
         <>
@@ -24,12 +62,10 @@ export default function Index({ auth, departments, cities }) {
                 <div className="relative min-h-screen flex flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white">
                     <div className="relative w-full max-w-2xl px-6 lg:max-w-7xl">
                         <Navbar auth={auth} />
-
                         <main className="mt-6 pb-12">
                             {!auth.user ? (
                                 <div className="text-center">
                                     <img
-                                        // src="https://images.unsplash.com/photo-1521560013-60a162a182ab"
                                         src="https://img-9gag-fun.9cache.com/photo/a1oy6XR_460s.jpg"
                                         alt="Home"
                                         className="w-64 mx-auto object-cover rounded-lg"
@@ -55,37 +91,80 @@ export default function Index({ auth, departments, cities }) {
                                     <div className="w-full md:w-1/2 mx-auto flex flex-wrap">
                                         <div className="flex space-x-2 mb-4 mx-auto w-full justify-center">
                                             <button
-                                                className={`px-4 py-2 text-black rounded ${mode === "city" ? "bg-blue-500" : "bg-gray-200"}`}
+                                                className={`px-4 py-2 text-black rounded ${mode === "city"
+                                                    ? "bg-blue-500"
+                                                    : "bg-gray-200"
+                                                    }`}
                                                 onClick={() => setMode("city")}
                                             >
                                                 City
                                             </button>
                                             <button
-                                                className={`px-4 py-2 text-black rounded ${mode === "department" ? "bg-blue-500" : "bg-gray-200"}`}
-                                                onClick={() => setMode("department")}
+                                                className={`px-4 py-2 text-black rounded ${mode === "department"
+                                                    ? "bg-blue-500"
+                                                    : "bg-gray-200"
+                                                    }`}
+                                                onClick={() =>
+                                                    setMode("department")
+                                                }
                                             >
                                                 Department
                                             </button>
                                         </div>
-                                        <label htmlFor="city" className="block text-lg font-semibold">
-                                            {`Which ${mode === "city" ? "city" : "department"} are you looking for?`}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="city"
-                                            name="city"
-                                            placeholder={`Enter a ${mode === "city" ? "city" : "department"} name`}
-                                            className="w-full px-4 py-2 mt-2 text-lg border border-gray-300 rounded-md focus:ring-[#FF2D20] focus:border-[#FF2D20] dark:bg-black dark:border-gray-700 dark:focus:ring-white dark:focus:border-white"
-                                        />
-
-                                        <button
-                                            type="button"
-                                            className="w-full px-4 py-2 mt-4 text-lg text-white bg-[#FF2D20] rounded-md focus:outline-none focus-visible:ring-[#FF2D20] dark:bg-white dark:text-black dark:focus-visible:ring-white"
+                                        <form
+                                            onSubmit={handleSearch}
+                                            className="w-full"
                                         >
-                                            Search
-                                        </button>
+                                            <label
+                                                htmlFor="city"
+                                                className="block text-lg font-semibold"
+                                            >
+                                                {`Which ${mode === "city"
+                                                    ? "city"
+                                                    : "department"
+                                                    } are you looking for?`}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="city"
+                                                name="city"
+                                                value={searchTerm}
+                                                onChange={(e) =>
+                                                    setSearchTerm(
+                                                        e.target.value
+                                                    )
+                                                }
+                                                placeholder={`Enter a ${mode === "city"
+                                                    ? "city"
+                                                    : "department"
+                                                    } name`}
+                                                className="w-full px-4 py-2 mt-2 text-lg border border-gray-300 rounded-md focus:ring-[#FF2D20] focus:border-[#FF2D20] dark:bg-black dark:border-gray-700 dark:focus:ring-white dark:focus:border-white"
+                                            />
+                                            <div className="flex space-x-2 mt-4">
+                                                <button
+                                                    type="submit"
+                                                    className="flex-1 px-4 py-2 text-lg text-white bg-[#FF2D20] rounded-md focus:outline-none focus-visible:ring-[#FF2D20] dark:bg-white dark:text-black dark:focus-visible:ring-white"
+                                                >
+                                                    Search
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleClear}
+                                                    className="flex-1 px-4 py-2 text-lg text-white bg-gray-400 rounded-md focus:outline-none focus-visible:ring-gray-400 dark:bg-gray-600 dark:text-black dark:focus-visible:ring-gray-600"
+                                                >
+                                                    Clear
+                                                </button>
+                                            </div>
+                                        </form>
                                         <div className="mt-8 w-full">
-                                            <Map data={data} mode={mode} />
+                                            <Map
+                                                ref={mapRef}
+                                                data={data}
+                                                mode={mode}
+                                                selectedLocation={
+                                                    selectedLocation
+                                                }
+                                            />
                                         </div>
                                     </div>
                                 </div>

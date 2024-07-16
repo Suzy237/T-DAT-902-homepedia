@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\DB;
 
 class IndexController extends Controller
 {
-
     private function getDepartements()
     {
         $departments = DB::table('departements')
@@ -27,7 +26,7 @@ class IndexController extends Controller
     private function getCities()
     {
         $cities = DB::table('cartography')
-            ->select('nom_commune_postal', 'latitude', 'longitude', 'code_postal')
+            ->select('nom_commune_postal', 'latitude', 'longitude', 'code_postal', 'average_cost', 'safety_rate')
             ->get();
         return $cities;
     }

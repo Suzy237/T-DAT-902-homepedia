@@ -2,33 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CityData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class MapDataController extends Controller
 {
-    public function getDepartments()
-    {
-        $departments = DB::table('departements')
-            ->leftJoin(DB::raw('
-                (
-                    SELECT DISTINCT ON (LEFT(code_postal, LENGTH(code_postal) - 3)) code_postal, latitude, longitude 
-                    FROM cartography 
-                    ORDER BY LEFT(code_postal, LENGTH(code_postal) - 3), code_postal
-                ) as c'), 'departements.num_dep', '=', DB::raw('LEFT(c.code_postal, LENGTH(departements.num_dep))'))
-            ->select('departements.*', 'c.latitude', 'c.longitude')
-            ->get();
-        return response()->json($departments);
-    }
-
-    public function getCities()
-    {
-        $cities = DB::table('cartography')
-            ->select('nom_commune_postal', 'latitude', 'longitude')
-            ->get();
-        return response()->json($cities);
-    }
-
     public function getLocationDetails($postalCode)
     {
         $location = DB::table('cartography')
@@ -40,15 +19,37 @@ class MapDataController extends Controller
                 'cartography.nom_commune_postal',
                 'cartography.average_cost',
                 'cartography.safety_rate',
-                DB::raw('COUNT(schools.id) as school_count')
+                'cartography.latitude',
+                'cartography.longitude',
+                DB::raw('COUNT(DISTINCT schools.id) as school_count')
             )
             ->groupBy(
                 'cartography.nom_commune_postal',
                 'cartography.average_cost',
-                'cartography.safety_rate'
+                'cartography.safety_rate',
+                'cartography.latitude',
+                'cartography.longitude',
             )
             ->first();
 
         return response()->json($location);
+    }
+
+    public function getCityDataFromMongoDB($postalCode)
+    {
+        $city = CityData::where('departement', $postalCode)->first();
+
+        return response()->json($city);
+    }
+
+    public function findCitiesByName($cityName)
+    {
+        $cities = DB::table('cartography')
+            ->where('nom_commune_postal', 'ilike', '%' . $cityName . '%')
+            ->select('nom_commune_postal', 'code_postal', 'latitude', 'longitude', 'average_cost', 'safety_rate')
+            ->limit(100)
+            ->get();
+
+        return response()->json($cities);
     }
 }

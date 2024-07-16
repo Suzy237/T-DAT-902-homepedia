@@ -3,7 +3,7 @@ import json
 import urllib.parse
 import psycopg2
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, when, broadcast, lpad
+from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, when, broadcast, lpad, substring
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, MapType, DecimalType
 
 # Define the schema for city_data_df
@@ -188,6 +188,31 @@ cartography_df = cartography_df \
         cartography_df["*"],
         avg_cost_df["average_cost"],
         safety_rate_df["safety_rate"]
+    )
+
+# Calculate average costs, average valeur fonciere and safety rates by departments
+departments_avg_cost_df = real_estate_df.withColumn("department_code", substring("Code postal", 1, 2)).groupBy("department_code").agg(
+    mean("Valeur fonciere").alias("avg_valeur_fonciere")
+)
+departments_safety_rate_df = safety_df.withColumn("department_code", substring("code_postal", 1, 2)).groupBy("department_code").agg(
+    mean("safety_rate").alias("avg_safety_rate")
+)
+departments_avg_cost_df = departments_avg_cost_df.join(
+    real_estate_df.withColumn("department_code", substring("Code postal", 1, 2)).groupBy("department_code").agg(
+        mean("average_cost").alias("avg_cost")
+    ),
+    "department_code"
+)
+
+# Merge with departments_df
+departments_df = departments_df \
+    .join(departments_avg_cost_df, departments_df.num_dep == departments_avg_cost_df.department_code, "left") \
+    .join(departments_safety_rate_df, departments_df.num_dep == departments_safety_rate_df.department_code, "left") \
+    .select(
+        departments_df["*"],
+        departments_avg_cost_df["avg_cost"].cast("decimal(15,2)"),
+        departments_avg_cost_df["avg_valeur_fonciere"].cast("decimal(15,2)"),
+        departments_safety_rate_df["avg_safety_rate"].cast("decimal(20,10)").alias("safety_rate")
     )
 
 # Convert 'Date mutation' column to date type

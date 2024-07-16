@@ -3,7 +3,7 @@ import json
 import urllib.parse
 import psycopg2
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, when, broadcast, lpad, substring
+from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, when, broadcast, lpad, udf, substring
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, MapType, DecimalType
 
 # Define the schema for city_data_df
@@ -190,31 +190,6 @@ cartography_df = cartography_df \
         safety_rate_df["safety_rate"]
     )
 
-# Calculate average costs, average valeur fonciere and safety rates by departments
-departments_avg_cost_df = real_estate_df.withColumn("department_code", substring("Code postal", 1, 2)).groupBy("department_code").agg(
-    mean("Valeur fonciere").alias("avg_valeur_fonciere")
-)
-departments_safety_rate_df = safety_df.withColumn("department_code", substring("code_postal", 1, 2)).groupBy("department_code").agg(
-    mean("safety_rate").alias("avg_safety_rate")
-)
-departments_avg_cost_df = departments_avg_cost_df.join(
-    real_estate_df.withColumn("department_code", substring("Code postal", 1, 2)).groupBy("department_code").agg(
-        mean("average_cost").alias("avg_cost")
-    ),
-    "department_code"
-)
-
-# Merge with departments_df
-departments_df = departments_df \
-    .join(departments_avg_cost_df, departments_df.num_dep == departments_avg_cost_df.department_code, "left") \
-    .join(departments_safety_rate_df, departments_df.num_dep == departments_safety_rate_df.department_code, "left") \
-    .select(
-        departments_df["*"],
-        departments_avg_cost_df["avg_cost"].cast("decimal(15,2)"),
-        departments_avg_cost_df["avg_valeur_fonciere"].cast("decimal(15,2)"),
-        departments_safety_rate_df["avg_safety_rate"].cast("decimal(20,10)").alias("safety_rate")
-    )
-
 # Convert 'Date mutation' column to date type
 real_estate_df = real_estate_df.withColumn("Date mutation", to_date(col("Date mutation"), "dd/MM/yyyy"))
 
@@ -314,6 +289,53 @@ save_to_postgresql(safety_rate_df, "safety_data")
 save_to_postgresql(cartography_df, "cartography")
 save_to_postgresql(real_estate_df, "real_estate")
 save_to_postgresql(schools_df, "schools")
+
+# Function to extract department code from postal code
+def extract_dept_code(postal_code):
+    if postal_code is None or len(postal_code) < 2:
+        return None
+    if postal_code.startswith(('97', '98')):
+        return postal_code[:3]
+    else:
+        return postal_code[:2]
+
+# Register the UDF
+extract_dept_code_udf = udf(extract_dept_code, StringType())
+
+# Calculate average values for departments
+dept_averages = cartography_df.withColumn(
+    "dept_code",
+    when(col("code_postal").isNotNull(), extract_dept_code_udf(col("code_postal")))
+    .otherwise(None)
+).groupBy("dept_code").agg(
+    mean("average_cost").alias("average_cost"),
+    mean("safety_rate").alias("safety_rate")
+)
+
+real_estate_dept_avg = real_estate_df.withColumn(
+    "dept_code",
+    when(col("postal_code").isNotNull(), extract_dept_code_udf(col("postal_code")))
+    .otherwise(None)
+).groupBy("dept_code").agg(
+    mean("valeur_fonciere").alias("avg_valeur_fonciere")
+)
+
+# Join department averages with departments_df
+departments_df = departments_df.join(
+    dept_averages,
+    departments_df.num_dep == dept_averages.dept_code,
+    "left"
+).join(
+    real_estate_dept_avg,
+    departments_df.num_dep == real_estate_dept_avg.dept_code,
+    "left"
+).select(
+    departments_df["*"],
+    dept_averages.average_cost,
+    dept_averages.safety_rate,
+    real_estate_dept_avg.avg_valeur_fonciere
+)
+
 save_to_postgresql(departments_df, "departements")
 
 # Save to MongoDB

@@ -33,7 +33,7 @@ export default function Admin() {
     useEffect(() => {
         const interval = setInterval(() => {
             logFetcher();
-        }, 30000);
+        }, 20000);
 
         return () => clearInterval(interval);
     }, []);

@@ -6,7 +6,6 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import mean, col, to_date, regexp_replace, current_timestamp, when, broadcast, lpad
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, MapType, DecimalType
 
-
 # Define the schema for city_data_df
 city_data_df_schema = StructType([
     StructField("geocoordinates", StructType([
@@ -146,6 +145,10 @@ departments_path = 'hdfs://namenode:8020/csv_data/france_department_list.csv'
 
 # Read CSV files with specified delimiter
 real_estate_df = spark.read.csv(real_estate_path, header=True, inferSchema=True, sep=',')
+real_estate_df = real_estate_df.withColumn(
+    "Valeur fonciere",
+    regexp_replace(col("Valeur fonciere"), ",", ".").cast("double")
+)
 cartography_df = spark.read.csv(cartography_path, header=True, inferSchema=True, sep=',')
 schools_df = spark.read.csv(schools_path, header=True, inferSchema=True, sep=';')
 safety_df = spark.read.csv(safety_path, header=True, inferSchema=True, sep=';')
@@ -170,9 +173,22 @@ cartography_df.cache()
 safety_df = safety_df.join(broadcast(cartography_df), safety_df['CODGEO_2023'] == cartography_df['code_commune_INSEE'], 'inner')
 
 # Process and transform data
-avg_cost_df = real_estate_df.groupBy("Commune").agg(mean("Valeur fonciere").alias("average_cost"))
-school_count_df = schools_df.groupBy("nom_commune").count().withColumnRenamed("count", "school_count")
-safety_rate_df = safety_df.groupBy("nom_commune").agg(mean("tauxpourmille").alias("safety_rate"))
+avg_cost_df = real_estate_df.groupBy("Code postal").agg(mean("Valeur fonciere").alias("average_cost"))
+safety_rate_df = safety_df.withColumn(
+    "tauxpourmille",
+    regexp_replace(col("tauxpourmille"), ",", ".").cast(DecimalType(20, 10))
+).groupBy("CODGEO_2023").agg(
+    mean("tauxpourmille").alias("safety_rate")
+)
+# Join the average calculations with the cartography data
+cartography_df = cartography_df \
+    .join(avg_cost_df, cartography_df.code_postal == avg_cost_df["Code postal"], "left") \
+    .join(safety_rate_df, cartography_df.code_commune_INSEE == safety_rate_df.CODGEO_2023, "left") \
+    .select(
+        cartography_df["*"],
+        avg_cost_df["average_cost"],
+        safety_rate_df["safety_rate"]
+    )
 
 # Convert 'Date mutation' column to date type
 real_estate_df = real_estate_df.withColumn("Date mutation", to_date(col("Date mutation"), "dd/MM/yyyy"))
@@ -223,6 +239,8 @@ cartography_df = cartography_df.select(
     col("latitude").cast("decimal(10,8)"),
     col("longitude").cast("decimal(11,8)"),
     col("nom_region"),
+    col("average_cost").cast("decimal(15,2)"),
+    col("safety_rate").cast("decimal(20,10)")
 )
 
 # Rename columns in departments_df to match PostgreSQL table schema

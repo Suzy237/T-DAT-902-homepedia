@@ -24,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('departements', function (Blueprint $table) {
-            //
+            $table->dropColumn('average_cost');
+            $table->dropColumn('safety_rate');
+            $table->dropColumn('avg_valeur_fonciere');
         });
     }
 };

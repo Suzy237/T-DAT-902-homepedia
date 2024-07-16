@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('departements', function (Blueprint $table) {
             $table->decimal('average_cost', 15, 2)->nullable();
             $table->decimal('safety_rate', 20, 10)->nullable();
-            $table->decimal('valeur_fonciere', 15, 2)->nullable();
+            $table->decimal('avg_valeur_fonciere', 15, 2)->nullable();
         });
     }
 

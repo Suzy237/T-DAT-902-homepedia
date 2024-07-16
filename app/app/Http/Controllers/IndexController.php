@@ -16,7 +16,7 @@ class IndexController extends Controller
         if (!$request->user()->is_admin) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
-        $filePath = env('APP_ENV') === 'production' ? '/var/www/startup.log' : '/Users/user/wac/msc/homepedia/startup.log';
+        $filePath = env('APP_ENV') === 'production' ? '/var/startup.log' : '/Users/user/wac/msc/homepedia/startup.log';
 
         // Check if the log file exists
         if (!File::exists($filePath)) {

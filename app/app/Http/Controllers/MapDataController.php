@@ -29,20 +29,24 @@ class MapDataController extends Controller
         return response()->json($cities);
     }
 
-    public function getLocationDetails($id)
+    public function getLocationDetails($postalCode)
     {
         $location = DB::table('cartography')
             ->leftJoin('real_estate', 'cartography.code_postal', '=', 'real_estate.commune_code')
             ->leftJoin('schools', 'cartography.code_postal', '=', 'schools.postal_code')
             ->leftJoin('safety_data', 'cartography.code_postal', '=', 'safety_data.code_postal')
-            ->where('cartography.code_postal', $id)
+            ->where('cartography.code_postal', $postalCode)
             ->select(
                 'cartography.nom_commune_postal',
-                DB::raw('AVG(real_estate.average_cost) as average_cost'),
-                DB::raw('AVG(safety_data.safety_rate) as safety_rate'),
+                'cartography.average_cost',
+                'cartography.safety_rate',
                 DB::raw('COUNT(schools.id) as school_count')
             )
-            ->groupBy('cartography.nom_commune_postal')
+            ->groupBy(
+                'cartography.nom_commune_postal',
+                'cartography.average_cost',
+                'cartography.safety_rate'
+            )
             ->first();
 
         return response()->json($location);

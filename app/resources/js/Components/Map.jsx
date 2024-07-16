@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import axios from "axios";
 
 export default function Map({ data, mode }) {
-    console.log({ data })
+    console.log({ data });
     const [selectedLocation, setSelectedLocation] = useState(null);
 
     const handleMarkerClick = async (locationId) => {
@@ -28,22 +28,32 @@ export default function Map({ data, mode }) {
                     key={location.id}
                     position={[+location.latitude, +location.longitude]}
                     eventHandlers={{
-                        click: () => handleMarkerClick(location.code_commune_INSEE),
+                        click: () => handleMarkerClick(location.code_postal),
                     }}
                 >
                     <Popup>
                         <div>
                             <h3 className="font-bold">
                                 {mode === "department"
-                                    ? location.dep_name :
-                                    location.nom_commune_postal
-                                }
+                                    ? location.dep_name
+                                    : location.nom_commune_postal}
                             </h3>
                             {selectedLocation && (
                                 <div>
-                                    <p>Average Cost: {selectedLocation.average_cost}</p>
-                                    <p>Criminality Rate: {selectedLocation.safety_rate}</p>
-                                    <p>School Count: {selectedLocation.school_count}</p>
+                                    <p>
+                                        Average Cost:{" "}
+                                        {selectedLocation.average_cost}
+                                    </p>
+                                    <p>
+                                        Criminality Rate:{" "}
+                                        {selectedLocation.safety_rate > 0
+                                            ? selectedLocation.safety_rate
+                                            : "N/A"}
+                                    </p>
+                                    <p>
+                                        School Count:{" "}
+                                        {selectedLocation.school_count}
+                                    </p>
                                 </div>
                             )}
                         </div>

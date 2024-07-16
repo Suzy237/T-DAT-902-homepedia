@@ -27,7 +27,7 @@ class IndexController extends Controller
     private function getCities()
     {
         $cities = DB::table('cartography')
-            ->select('nom_commune_postal', 'latitude', 'longitude', 'code_commune_INSEE')
+            ->select('nom_commune_postal', 'latitude', 'longitude', 'code_postal')
             ->get();
         return $cities;
     }

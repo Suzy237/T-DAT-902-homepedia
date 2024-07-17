@@ -20,30 +20,46 @@ export default function Index({ auth, departments, cities }) {
         }
     }, [mode, cities, departments, searchTerm]);
 
-    const handleSearch = async (event) => {
+    const handleSearch = (event) => {
         event.preventDefault();
         if (searchTerm === "") {
             handleClear();
         } else {
-            try {
-                const response = await axios.get(`/cities/${searchTerm.replace(/['-]/g, " ")}`);
-                if (response.data && response.data.length > 0) {
-                    setSearchResults(response.data);
-                    setCurrentResultIndex(0);
-                    const firstResult = response.data[0];
-                    setSelectedLocation(firstResult);
-                    setData(response.data); // Display all search results on the map
-                    mapRef.current?.flyTo(
-                        [firstResult.latitude, firstResult.longitude],
-                        13
-                    );
+            if (mode === "city") {
+                axios.get(`/cities/${searchTerm.replace(/['-]/g, " ")}`)
+                    .then(response => {
+                        if (response.data && response.data.length > 0) {
+                            setSearchResults(response.data);
+                            cycleSearchResults(response.data);
+                        } else {
+                            console.log("No results found");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching cities:", error);
+                    });
+            } else {
+                const results = departments.filter(dept => dept.dep_name.toLowerCase().includes(searchTerm.toLowerCase()));
+                if (results.length > 0) {
+                    setSearchResults(results);
+                    cycleSearchResults(results);
                 } else {
                     console.log("No results found");
                 }
-            } catch (error) {
-                console.error("Error fetching cities:", error);
             }
         }
+    };
+
+    const cycleSearchResults = (results) => {
+        const newIndex = (currentResultIndex + 1) % results.length;
+        setCurrentResultIndex(newIndex);
+        const currentResult = results[newIndex];
+        setSelectedLocation(currentResult);
+        setData(results);
+        const coordinates = mode === "city"
+            ? [currentResult.latitude, currentResult.longitude]
+            : [currentResult.latitude, currentResult.longitude];
+        mapRef.current?.flyTo(coordinates, 13);
     };
 
     const handleClear = () => {

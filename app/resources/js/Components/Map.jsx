@@ -9,39 +9,44 @@ const MapComponent = ({ data, mode, selected, setSelected }) => {
 
     useEffect(() => {
         if (selected) {
-            const { latitude, longitude } = data.find(location => location.code_postal === selected.code_postal) || {};
+            const { latitude, longitude } = mode === "department"
+                ? data.find(location => location.code_departement === selected.code_departement) || {}
+                : data.find(location => location.code_postal === selected.code_postal) || {};
             if (latitude && longitude) {
                 mapRef.current?.flyTo([latitude, longitude], 13);
             } else {
                 console.error("Invalid selected location coordinates:", selected);
             }
         }
-    }, [selected, data]);
+    }, [selected, data, mode]);
 
-    const handleMarkerClick = async (postalCode) => {
-        try {
-            const response = await axios.get(`/location/${postalCode}`);
-            const locationData = { ...response.data, postalCode };
-
+    const handleMarkerClick = async (location) => {
+        if (mode === "city") {
             try {
-                const cityResponse = await axios.get(`/city/${postalCode}`);
-                if (Object.keys(cityResponse.data).length > 0) {
-                    locationData.cityData = cityResponse.data;
+                const response = await axios.get(`/location/${location.code_postal}`);
+                const locationData = { ...response.data, postalCode: location.code_postal };
+
+                try {
+                    const cityResponse = await axios.get(`/city/${location.code_postal}`);
+                    if (Object.keys(cityResponse.data).length > 0) {
+                        locationData.cityData = cityResponse.data;
+                    }
+                } catch (error) {
+                    console.error("Error fetching city details:", error);
+                }
+
+                if (locationData.latitude && locationData.longitude) {
+                    locationData.latitude = +locationData.latitude;
+                    locationData.longitude = +locationData.longitude;
+                    setSelected(locationData);
+                } else {
+                    console.error("Invalid marker click coordinates:", locationData);
                 }
             } catch (error) {
-                console.error("Error fetching city details:", error);
+                console.error("Error fetching location details:", error);
             }
-
-            if (locationData.latitude && locationData.longitude) {
-                // numerify the coordinates
-                locationData.latitude = +locationData.latitude;
-                locationData.longitude = +locationData.longitude;
-                setSelected(locationData);
-            } else {
-                console.error("Invalid marker click coordinates:", locationData);
-            }
-        } catch (error) {
-            console.error("Error fetching location details:", error);
+        } else {
+            setSelected(location);
         }
     };
 
@@ -66,7 +71,7 @@ const MapComponent = ({ data, mode, selected, setSelected }) => {
                         key={i}
                         position={[+location.latitude, +location.longitude]}
                         eventHandlers={{
-                            click: () => handleMarkerClick(location.code_postal),
+                            click: () => handleMarkerClick(location),
                         }}
                     >
                         <Popup>
@@ -76,11 +81,11 @@ const MapComponent = ({ data, mode, selected, setSelected }) => {
                                         ? location.dep_name
                                         : location.nom_commune_postal}
                                 </h3>
-                                {selected && selected.postalCode === location.code_postal && (
+                                {selected && (
                                     <div>
                                         <p>
                                             <span className="font-bold">Average property cost: </span>
-                                            {selected.average_cost ? formatCurrency(selected.average_cost) : "N/A"}
+                                            {formatCurrency(selected.average_cost)}
                                         </p>
                                         <p>
                                             <span className="font-bold">Safety rate: </span>
@@ -90,7 +95,7 @@ const MapComponent = ({ data, mode, selected, setSelected }) => {
                                             <span className="font-bold">School count: </span>
                                             {selected.school_count}
                                         </p>
-                                        {selected.cityData ? (
+                                        {mode === "city" && selected.cityData ? (
                                             <CityDetails cityData={selected.cityData} />
                                         ) : (
                                             <p>No additional city data available.</p>

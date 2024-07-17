@@ -31,17 +31,41 @@ class IndexController extends Controller
 
         return response()->json(['logs' => $logs], 200);
     }
+
     private function getDepartements()
     {
         $departments = DB::table('departements')
-            ->leftJoin(DB::raw('
+            ->leftJoin(DB::raw(
+                '
                 (
-                    SELECT DISTINCT ON (LEFT(code_postal, LENGTH(code_postal) - 3)) code_postal, latitude, longitude 
-                    FROM cartography 
+                    SELECT DISTINCT ON (LEFT(code_postal, LENGTH(code_postal) - 3)) code_postal, latitude, longitude
+                    FROM cartography
                     ORDER BY LEFT(code_postal, LENGTH(code_postal) - 3), code_postal
-                ) as c'), 'departements.num_dep', '=', DB::raw('LEFT(c.code_postal, LENGTH(departements.num_dep))'))
-            ->select('departements.*', 'c.latitude', 'c.longitude')
+                ) as c'
+            ), function ($join) {
+                $join->on(DB::raw('CASE
+                    WHEN LEFT(c.code_postal, 2) = \'97\' THEN LEFT(c.code_postal, 3)
+                    WHEN LEFT(c.code_postal, 1) = \'0\' THEN RIGHT(LEFT(c.code_postal, 2), 1)
+                    ELSE LEFT(c.code_postal, 2)
+                END'), '=', DB::raw('CASE
+                    WHEN LEFT(departements.num_dep, 2) = \'97\' THEN departements.num_dep
+                    ELSE LPAD(departements.num_dep, 2, \'0\')
+                END'));
+            })
+            ->leftJoin('schools', function ($join) {
+                $join->on(DB::raw('CASE
+                    WHEN LEFT(schools.postal_code, 2) = \'97\' THEN LEFT(schools.postal_code, 3)
+                    WHEN LEFT(schools.postal_code, 1) = \'0\' THEN RIGHT(LEFT(schools.postal_code, 2), 1)
+                    ELSE LEFT(schools.postal_code, 2)
+                END'), '=', DB::raw('CASE
+                    WHEN LEFT(departements.num_dep, 2) = \'97\' THEN departements.num_dep
+                    ELSE LPAD(departements.num_dep, 2, \'0\')
+                END'));
+            })
+            ->select('departements.*', 'c.latitude', 'c.longitude', DB::raw('COUNT(schools.id) as school_count'))
+            ->groupBy('departements.id', 'c.latitude', 'c.longitude')
             ->get();
+
         return $departments;
     }
 

@@ -63,6 +63,7 @@ export default function Index({ auth, departments, cities }) {
     };
 
     const handleClear = () => {
+        console.log({ departments, cities })
         setSearchTerm("");
         setSelectedLocation(null);
         setSearchResults([]);

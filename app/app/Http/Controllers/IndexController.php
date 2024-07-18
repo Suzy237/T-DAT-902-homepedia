@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use App\Models\CityData;
+use App\Models\CityRank;
 
 class IndexController extends Controller
 {
@@ -32,6 +33,8 @@ class IndexController extends Controller
 
         return response()->json(['logs' => $logs], 200);
     }
+
+
 
     private function getDepartements()
     {
@@ -78,27 +81,28 @@ class IndexController extends Controller
         return $cities;
     }
 
-    public function getSampleCities()
+    private function getTop100Cities()
     {
-        $cities = CityData::raw(function ($collection) {
+        $cities = CityRank::raw(function ($collection) {
             return $collection->aggregate([
-                ['$sample' => ['size' => 100]],
-                ['$project' => ['departement' => 1, '_id' => 0]]
+                ['$sort' => ['Note moyenne' => -1]],
+                ['$limit' => 100],
             ]);
-        })->pluck('departement');
+        });
 
         return $cities;
     }
+
 
     public function index()
     {
         $departments = $this->getDepartements();
         $cities = $this->getCities();
-        $sampleCities = $this->getSampleCities();
+        $top100Cities = $this->getTop100Cities();
         return Inertia::render('Index', [
             'departments' => $departments,
             'cities' => $cities,
-            'sampleCities' => $sampleCities,
+            'top100Cities' => $top100Cities,
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,

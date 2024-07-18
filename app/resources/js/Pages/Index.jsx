@@ -16,7 +16,9 @@ export default function Index({ auth, departments, cities, top100Cities }) {
 
     useEffect(() => {
         if (searchTerm === "") {
-            let citySlice = cities.filter((e, i) => sampleCities.includes(e.code_postal) && i % 5 === 0);
+            let citySlice = cities.filter(
+                (e, i) => sampleCities.includes(e.code_postal) && i % 5 === 0
+            );
             setData(mode === "city" ? citySlice : departments);
         }
     }, [mode, cities, departments, searchTerm]);
@@ -73,7 +75,9 @@ export default function Index({ auth, departments, cities, top100Cities }) {
         setSearchTerm("");
         setSelectedLocation(null);
         setSearchResults([]);
-        let citySlice = cities.filter((e, i) => sampleCities.includes(e.code_postal) && i % 5 === 0);
+        let citySlice = cities.filter(
+            (e, i) => sampleCities.includes(e.code_postal) && i % 5 === 0
+        );
         setData(mode === "city" ? citySlice : departments);
         mapRef.current?.setView([46.603354, 1.888334], 6); // Center of France
     };

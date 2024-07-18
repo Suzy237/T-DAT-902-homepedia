@@ -9,25 +9,59 @@ const MapComponent = ({ data, mode, selected, setSelected }) => {
 
     useEffect(() => {
         if (selected) {
-            const { latitude, longitude } = mode === "department"
-                ? data.find(location => location.code_departement === selected.code_departement) || {}
-                : data.find(location => location.code_postal === selected.code_postal) || {};
+            const { latitude, longitude } =
+                mode === "department"
+                    ? data.find(
+                        (location) =>
+                            location.code_departement ===
+                            selected.code_departement
+                    ) || {}
+                    : data.find(
+                        (location) =>
+                            location.code_postal === selected.code_postal
+                    ) || {};
             if (latitude && longitude) {
                 mapRef.current?.flyTo([latitude, longitude], 13);
             } else {
-                console.error("Invalid selected location coordinates:", selected);
+                console.error(
+                    "Invalid selected location coordinates:",
+                    selected
+                );
             }
         }
     }, [selected, data, mode]);
 
+    function formatRank(i) {
+        if (!i) return "N/A";
+        let j = i % 10,
+            k = i % 100;
+        if (j === 1 && k !== 11) {
+            return i + "st";
+        }
+        if (j === 2 && k !== 12) {
+            return i + "nd";
+        }
+        if (j === 3 && k !== 13) {
+            return i + "rd";
+        }
+        return i + "th";
+    }
+
     const handleMarkerClick = async (location) => {
         if (mode === "city") {
             try {
-                const response = await axios.get(`/location/${location.code_postal}`);
-                const locationData = { ...response.data, postalCode: location.code_postal };
+                const response = await axios.get(
+                    `/location/${location.code_postal}`
+                );
+                const locationData = {
+                    ...response.data,
+                    postalCode: location.code_postal,
+                };
 
                 try {
-                    const cityResponse = await axios.get(`/city/${location.code_postal}`);
+                    const cityResponse = await axios.get(
+                        `/city/${location.code_postal}`
+                    );
                     if (Object.keys(cityResponse.data).length > 0) {
                         locationData.cityData = cityResponse.data;
                     }
@@ -40,7 +74,10 @@ const MapComponent = ({ data, mode, selected, setSelected }) => {
                     locationData.longitude = +locationData.longitude;
                     setSelected(locationData);
                 } else {
-                    console.error("Invalid marker click coordinates:", locationData);
+                    console.error(
+                        "Invalid marker click coordinates:",
+                        locationData
+                    );
                 }
             } catch (error) {
                 console.error("Error fetching location details:", error);
@@ -51,21 +88,25 @@ const MapComponent = ({ data, mode, selected, setSelected }) => {
     };
 
     const formatCurrency = (value) => {
-        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+        return new Intl.NumberFormat("fr-FR", {
+            style: "currency",
+            currency: "EUR",
+        }).format(value);
     };
 
     const formatSafetyRate = (rate) => {
         const parsedRate = parseFloat(rate);
         if (isNaN(parsedRate)) return "N/A";
         if (parsedRate < 2) return <span style={{ color: "green" }}>Safe</span>;
-        if (parsedRate < 5) return <span style={{ color: "orange" }}>Moderate</span>;
+        if (parsedRate < 5)
+            return <span style={{ color: "orange" }}>Moderate</span>;
         return <span style={{ color: "red" }}>Dangerous</span>;
     };
 
     return (
         <>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {data.map((location, i) => (
+            {data.map((location, i) =>
                 location.latitude && location.longitude ? (
                     <Marker
                         key={i}
@@ -84,21 +125,51 @@ const MapComponent = ({ data, mode, selected, setSelected }) => {
                                 {selected && (
                                     <div>
                                         <p>
-                                            <span className="font-bold">Average property cost: </span>
-                                            {formatCurrency(selected.average_cost)}
+                                            <span className="font-bold">
+                                                Rank:{" "}
+                                            </span>
+                                            {formatRank(selected.rank)}
+                                        </p>
+                                        {selected.rating && (
+                                            <p>
+                                                <span className="font-bold">
+                                                    City rating:{" "}
+                                                </span>
+                                                {selected.rating / 100} / 5
+                                            </p>
+                                        )}
+                                        <p>
+                                            <span className="font-bold">
+                                                Average property cost:{" "}
+                                            </span>
+                                            {formatCurrency(
+                                                selected.average_cost
+                                            )}
                                         </p>
                                         <p>
-                                            <span className="font-bold">Safety rate: </span>
-                                            {formatSafetyRate(+selected.safety_rate)}
+                                            <span className="font-bold">
+                                                Safety rate:{" "}
+                                            </span>
+                                            {formatSafetyRate(
+                                                +selected.safety_rate
+                                            )}
                                         </p>
                                         <p>
-                                            <span className="font-bold">School count: </span>
+                                            <span className="font-bold">
+                                                School count:{" "}
+                                            </span>
                                             {selected.school_count}
                                         </p>
-                                        {mode === "city" && selected.cityData ? (
-                                            <CityDetails cityData={selected.cityData} />
+                                        {mode === "city" &&
+                                            selected.cityData ? (
+                                            <CityDetails
+                                                cityData={selected.cityData}
+                                            />
                                         ) : (
-                                            <p>No additional city data available.</p>
+                                            <p>
+                                                No additional city data
+                                                available.
+                                            </p>
                                         )}
                                     </div>
                                 )}
@@ -106,7 +177,7 @@ const MapComponent = ({ data, mode, selected, setSelected }) => {
                         </Popup>
                     </Marker>
                 ) : null
-            ))}
+            )}
         </>
     );
 };

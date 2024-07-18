@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CityData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\CityRank;
 
 class MapDataController extends Controller
 {
@@ -28,12 +29,31 @@ class MapDataController extends Controller
                 'cartography.average_cost',
                 'cartography.safety_rate',
                 'cartography.latitude',
-                'cartography.longitude',
+                'cartography.longitude'
             )
             ->first();
 
+        if (!$location) {
+            return response()->json(['error' => 'Location not found'], 404);
+        }
+
+        $cityRank = CityRank::where('Postal', $postalCode)->first();
+
+        if ($cityRank) {
+            $location->rating = $cityRank->{'Note moyenne'};
+
+            $allCityRanks = CityRank::orderByDesc('Note moyenne')->get();
+            $rank = $allCityRanks->search(function ($item) use ($postalCode) {
+                return $item->Postal === $postalCode;
+            }) + 1;
+
+            $location->rank = $rank;
+            $location->total_cities = $allCityRanks->count();
+        }
+
         return response()->json($location);
     }
+
 
     public function getCityDataFromMongoDB($postalCode)
     {

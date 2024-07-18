@@ -7,11 +7,10 @@ const LocationDetail = ({ location, onClose }) => {
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
-            <div className="relative p-8 bg-white shadow-lg rounded-lg max-w-lg w-full z-50">
-                {" "}
+            <div className="relative p-8 bg-white shadow-lg rounded-lg max-w-lg w-full">
                 <button
                     onClick={onClose}
-                    className="absolute top-0 right-0 m-4 p-2 bg-gray-200 rounded-full hover:bg-gray-300 z-50"
+                    className="absolute top-0 right-0 m-4 p-2 bg-gray-200 rounded-full hover:bg-gray-300"
                 >
                     <svg
                         className="w-6 h-6 text-gray-600"
@@ -42,7 +41,7 @@ const LocationDetail = ({ location, onClose }) => {
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:underline"
                 >
-                    View on Zillow
+                    View on Homepedia
                 </a>
             </div>
         </div>

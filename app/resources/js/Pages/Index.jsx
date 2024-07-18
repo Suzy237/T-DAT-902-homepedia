@@ -9,16 +9,12 @@ export default function Index({ auth, departments, cities }) {
     const [data, setData] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedLocation, setSelectedLocation] = useState(null);
-    const [currentResultIndex, setCurrentResultIndex] = useState(0);
     const [searchResults, setSearchResults] = useState([]);
     const mapRef = useRef();
 
     useEffect(() => {
-        if (searchTerm === "") {
-            const citySlice = cities.filter((e, i) => i % 500 === 0);
-            setData(mode === "city" ? citySlice : departments);
-        }
-    }, [mode, cities, departments, searchTerm]);
+        setData(mode === "city" ? cities : departments);
+    }, [mode, cities, departments]);
 
     const handleSearch = (event) => {
         event.preventDefault();
@@ -26,23 +22,32 @@ export default function Index({ auth, departments, cities }) {
             handleClear();
         } else {
             if (mode === "city") {
-                axios.get(`/cities/${searchTerm.replace(/['-]/g, " ")}`)
-                    .then(response => {
-                        if (response.data && response.data.length > 0) {
-                            setSearchResults(response.data);
-                            cycleSearchResults(response.data);
-                        } else {
-                            console.log("No results found");
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error fetching cities:", error);
-                    });
-            } else {
-                const results = departments.filter(dept => dept.dep_name.toLowerCase().includes(searchTerm.toLowerCase()));
+                const results = cities.filter((city) =>
+                    city.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
                 if (results.length > 0) {
                     setSearchResults(results);
-                    cycleSearchResults(results);
+                    setSelectedLocation(results[0]);
+                    mapRef.current?.flyTo(
+                        [results[0].latitude, results[0].longitude],
+                        13
+                    );
+                } else {
+                    console.log("No results found");
+                }
+            } else {
+                const results = departments.filter((dept) =>
+                    dept.dep_name
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+                );
+                if (results.length > 0) {
+                    setSearchResults(results);
+                    setSelectedLocation(results[0]);
+                    mapRef.current?.flyTo(
+                        [results[0].latitude, results[0].longitude],
+                        13
+                    );
                 } else {
                     console.log("No results found");
                 }
@@ -50,144 +55,171 @@ export default function Index({ auth, departments, cities }) {
         }
     };
 
-    const cycleSearchResults = (results) => {
-        const newIndex = (currentResultIndex + 1) % results.length;
-        setCurrentResultIndex(newIndex);
-        const currentResult = results[newIndex];
-        setSelectedLocation(currentResult);
-        setData(results);
-        const coordinates = mode === "city"
-            ? [currentResult.latitude, currentResult.longitude]
-            : [currentResult.latitude, currentResult.longitude];
-        mapRef.current?.flyTo(coordinates, 13);
-    };
-
     const handleClear = () => {
-        console.log({ departments, cities })
         setSearchTerm("");
         setSelectedLocation(null);
         setSearchResults([]);
-        const citySlice = cities.filter((e, i) => i % 500 === 0);
-        setData(mode === "city" ? citySlice : departments);
         mapRef.current?.setView([46.603354, 1.888334], 6); // Center of France
+    };
+
+    const handleLocationSelect = (event) => {
+        const locationName = event.target.value;
+        setSearchTerm(locationName);
     };
 
     return (
         <>
             <Head title="Home" />
-            <div className="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
-                <div className="relative min-h-screen flex flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white">
-                    <div className="relative w-full max-w-2xl px-6 lg:max-w-7xl">
-                        <Navbar auth={auth} />
-                        <main className="mt-6 pb-12">
-                            {!auth.user ? (
-                                <div className="text-center">
-                                    <img
-                                        src="https://img-9gag-fun.9cache.com/photo/a1oy6XR_460s.jpg"
-                                        alt="Home"
-                                        className="w-64 mx-auto object-cover rounded-lg"
-                                    />
-                                    <h1 className="mt-8 text-3xl font-bold">
-                                        Welcome!
-                                    </h1>
-                                    <p className="mt-4 text-lg">
-                                        Homepedia is a platform to help you find
-                                        your dream home. Sign up to get started.
-                                    </p>
-                                    <div className="mt-8">
-                                        <Link
-                                            href={route("register")}
-                                            className="rounded-md px-6 py-3 text-white bg-[#FF2D20] ring-1 ring-[#FF2D20] transition hover:bg-transparent hover:text-[#FF2D20] focus:outline-none focus-visible:ring-[#FF2D20] dark:text-black dark:bg-white dark:hover:text-white dark:hover:bg-transparent dark:focus-visible:ring-white"
-                                        >
-                                            Register now
-                                        </Link>
-                                    </div>
+            <div className="min-h-screen bg-gradient-to-r from-gray-900 to-gray-800 text-gray-100 flex flex-col items-center justify-center">
+                <Navbar auth={auth} />
+                <div className="w-full max-w-4xl p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                    <main className="space-y-6">
+                        {!auth.user ? (
+                            <div className="text-center">
+                                <img
+                                    src="https://img-9gag-fun.9cache.com/photo/a1oy6XR_460s.jpg"
+                                    alt="Home"
+                                    className="w-64 mx-auto object-cover rounded-full shadow-lg"
+                                />
+                                <h1 className="mt-8 text-4xl font-bold text-gray-900 dark:text-gray-100">
+                                    Welcome to Homepedia!
+                                </h1>
+                                <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">
+                                    Find your dream home with ease. Sign up to
+                                    get started.
+                                </p>
+                                <div className="mt-8">
+                                    <Link
+                                        href={route("register")}
+                                        className="px-6 py-3 text-lg font-semibold text-white bg-red-600 rounded-lg shadow-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                                    >
+                                        Register now
+                                    </Link>
                                 </div>
-                            ) : (
-                                <div className="min-h-screen flex flex-wrap">
-                                    <div className="w-full md:w-1/2 mx-auto flex flex-wrap">
-                                        <div className="flex space-x-2 mb-4 mx-auto w-full justify-center">
-                                            <button
-                                                className={`px-4 py-2 text-black rounded ${mode === "city"
-                                                    ? "bg-blue-500"
-                                                    : "bg-gray-200"
-                                                    }`}
-                                                onClick={() => setMode("city")}
-                                            >
-                                                City
-                                            </button>
-                                            <button
-                                                className={`px-4 py-2 text-black rounded ${mode === "department"
-                                                    ? "bg-blue-500"
-                                                    : "bg-gray-200"
-                                                    }`}
-                                                onClick={() =>
-                                                    setMode("department")
-                                                }
-                                            >
-                                                Department
-                                            </button>
-                                        </div>
-                                        <form
-                                            onSubmit={handleSearch}
-                                            className="w-full"
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                <div className="flex justify-center space-x-4">
+                                    <button
+                                        className={`px-6 py-3 rounded-lg font-semibold text-lg ${
+                                            mode === "city"
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-gray-200 text-gray-900"
+                                        } hover:bg-blue-500 transition-colors duration-200`}
+                                        onClick={() => setMode("city")}
+                                    >
+                                        City
+                                    </button>
+                                    <button
+                                        className={`px-6 py-3 rounded-lg font-semibold text-lg ${
+                                            mode === "department"
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-gray-200 text-gray-900"
+                                        } hover:bg-blue-500 transition-colors duration-200`}
+                                        onClick={() => setMode("department")}
+                                    >
+                                        Department
+                                    </button>
+                                </div>
+                                <form
+                                    onSubmit={handleSearch}
+                                    className="space-y-4"
+                                >
+                                    <div>
+                                        <label
+                                            htmlFor="location"
+                                            className="block text-xl font-semibold text-gray-900 dark:text-gray-100"
                                         >
-                                            <label
-                                                htmlFor="city"
-                                                className="block text-lg font-semibold"
-                                            >
-                                                {`Which ${mode === "city"
+                                            {`Which ${
+                                                mode === "city"
                                                     ? "city"
                                                     : "department"
-                                                    } are you looking for?`}
-                                            </label>
+                                            } are you looking for?`}
+                                        </label>
+                                        <div className="relative mt-2">
                                             <input
                                                 type="text"
-                                                id="city"
-                                                name="city"
+                                                id="location"
+                                                name="location"
                                                 value={searchTerm}
                                                 onChange={(e) =>
                                                     setSearchTerm(
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder={`Enter a ${mode === "city"
-                                                    ? "city"
-                                                    : "department"
-                                                    } name`}
-                                                className="w-full px-4 py-2 mt-2 text-lg border border-gray-300 rounded-md focus:ring-[#FF2D20] focus:border-[#FF2D20] dark:bg-black dark:border-gray-700 dark:focus:ring-white dark:focus:border-white"
+                                                placeholder={`Enter a ${
+                                                    mode === "city"
+                                                        ? "city"
+                                                        : "department"
+                                                } name`}
+                                                className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent dark:bg-gray-700 dark:text-gray-100 dark:focus:ring-white"
                                             />
-                                            <div className="flex space-x-2 mt-4">
-                                                <button
-                                                    type="submit"
-                                                    className="flex-1 px-4 py-2 text-lg text-white bg-[#FF2D20] rounded-md focus:outline-none focus-visible:ring-[#FF2D20] dark:bg-white dark:text-black dark:focus-visible:ring-white"
-                                                >
-                                                    Search
-                                                </button>
+                                            <div className="absolute right-0 top-0 h-full flex items-center pr-2">
                                                 <button
                                                     type="button"
+                                                    className="px-4 py-2 text-sm bg-gray-300 rounded-lg shadow hover:bg-gray-200 transition-colors duration-200"
                                                     onClick={handleClear}
-                                                    className="flex-1 px-4 py-2 text-lg text-white bg-gray-400 rounded-md focus:outline-none focus-visible:ring-gray-400 dark:bg-gray-600 dark:text-black dark:focus-visible:ring-gray-600"
                                                 >
                                                     Clear
                                                 </button>
                                             </div>
-                                        </form>
-                                        <div className="mt-8 w-full">
-                                            <Map
-                                                ref={mapRef}
-                                                data={data}
-                                                mode={mode}
-                                                selectedLocation={
-                                                    selectedLocation
-                                                }
-                                            />
                                         </div>
                                     </div>
+                                    <div className="flex justify-center space-x-4">
+                                        <button
+                                            type="submit"
+                                            className="px-6 py-3 text-lg font-semibold text-white bg-red-600 rounded-lg shadow-md hover:bg-red-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-opacity-50"
+                                        >
+                                            Search
+                                        </button>
+                                    </div>
+                                </form>
+                                <div className="flex justify-center mt-4">
+                                    <select
+                                        className="px-4 py-3 text-lg border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-700 dark:text-gray-100"
+                                        onChange={handleLocationSelect}
+                                    >
+                                        <option value="">
+                                            {`Select a ${
+                                                mode === "city"
+                                                    ? "city"
+                                                    : "department"
+                                            }`}
+                                        </option>
+                                        {(mode === "city"
+                                            ? cities
+                                            : departments
+                                        ).map((item) => (
+                                            <option
+                                                key={
+                                                    mode === "city"
+                                                        ? item.id
+                                                        : item.dep_code
+                                                }
+                                                value={
+                                                    mode === "city"
+                                                        ? item.name
+                                                        : item.dep_name
+                                                }
+                                            >
+                                                {mode === "city"
+                                                    ? item.name
+                                                    : item.dep_name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
-                            )}
-                        </main>
-                    </div>
+                                <div className="mt-8 w-full h-96 rounded-lg overflow-hidden">
+                                    <Map
+                                        ref={mapRef}
+                                        data={data}
+                                        mode={mode}
+                                        selectedLocation={selectedLocation}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </main>
                 </div>
             </div>
         </>

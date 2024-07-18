@@ -103,6 +103,7 @@ mongo_db = os.getenv('MONGO_DB')
 mongo_user = os.getenv('MONGO_USERNAME')
 mongo_password = urllib.parse.quote_plus(os.getenv('MONGO_PASSWORD'))
 
+
 # Initialize Spark session with PostgreSQL JDBC driver and MongoDB Spark Connector
 spark = SparkSession.builder \
     .appName("Housing Market Data Processing") \
@@ -141,6 +142,7 @@ cartography_path = 'hdfs://namenode:8020/csv_data/france_cartography_data.csv'
 schools_path = 'hdfs://namenode:8020/csv_data/france_schools_data.csv'
 safety_path = 'hdfs://namenode:8020/csv_data/france_safety_rate_data.csv.gz'
 city_data_path = 'hdfs://namenode:8020/csv_data/city_data.json'
+city_rank_path = 'hdfs://namenode:8020/csv_data/city_rank.json'
 departments_path = 'hdfs://namenode:8020/csv_data/france_department_list.csv'
 
 # Read CSV files with specified delimiter
@@ -153,6 +155,7 @@ cartography_df = spark.read.csv(cartography_path, header=True, inferSchema=True,
 schools_df = spark.read.csv(schools_path, header=True, inferSchema=True, sep=';')
 safety_df = spark.read.csv(safety_path, header=True, inferSchema=True, sep=';')
 city_data_df = spark.read.option("multiline", "true").schema(city_data_df_schema).json(city_data_path)
+city_rank_df = spark.read.option("multiline", "true").json(city_rank_path)
 departments_df = spark.read.csv(departments_path, header=True, inferSchema=True, sep=',')
 
 # Clean column names to remove any leading/trailing whitespace and replace special characters
@@ -170,20 +173,20 @@ departments_df = clean_column_names(departments_df)
 cartography_df.cache()
 
 # Broadcast join cartography_df if it's small
-safety_df = safety_df.join(broadcast(cartography_df), safety_df['CODGEO_2023'] == cartography_df['code_commune_INSEE'], 'inner')
+safety_df = safety_df.join(broadcast(cartography_df), safety_df['CODGEO_2024'] == cartography_df['code_commune_INSEE'], 'inner')
 
 # Process and transform data
 avg_cost_df = real_estate_df.groupBy("Code postal").agg(mean("Valeur fonciere").alias("average_cost"))
 safety_rate_df = safety_df.withColumn(
     "tauxpourmille",
     regexp_replace(col("tauxpourmille"), ",", ".").cast(DecimalType(20, 10))
-).groupBy("CODGEO_2023").agg(
+).groupBy("CODGEO_2024").agg(
     mean("tauxpourmille").alias("safety_rate")
 )
 # Join the average calculations with the cartography data
 cartography_df = cartography_df \
     .join(avg_cost_df, cartography_df.code_postal == avg_cost_df["Code postal"], "left") \
-    .join(safety_rate_df, cartography_df.code_commune_INSEE == safety_rate_df.CODGEO_2023, "left") \
+    .join(safety_rate_df, cartography_df.code_commune_INSEE == safety_rate_df.CODGEO_2024, "left") \
     .select(
         cartography_df["*"],
         avg_cost_df["average_cost"],
@@ -345,6 +348,14 @@ city_data_df.write \
     .option("connection.uri", f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}") \
     .option("database", mongo_db) \
     .option("collection", "cityData") \
+    .save()
+
+city_rank_df.write \
+    .format("mongodb") \
+    .mode("overwrite") \
+    .option("connection.uri", f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}") \
+    .option("database", mongo_db) \
+    .option("collection", "cityRank") \
     .save()
 
 # Print JSON output

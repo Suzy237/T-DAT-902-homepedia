@@ -16,6 +16,7 @@ Route::get('/location/{id}', [MapDataController::class, 'getLocationDetails']);
 Route::get('/city/{id}', [MapDataController::class, 'getCityDataFromMongoDB']);
 Route::get('/cities/{name}', [MapDataController::class, 'findCitiesByName']);
 Route::get('/logs', [IndexController::class, 'getLogs']);
+Route::get('/sample-cities', [MapDataController::class, 'getSampleCities']);
 
 
 Route::get('/dashboard', function () {

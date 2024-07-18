@@ -4,7 +4,7 @@ import Map from "@/Components/Map";
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-export default function Index({ auth, departments, cities }) {
+export default function Index({ auth, departments, cities, sampleCities }) {
     const [mode, setMode] = useState("department");
     const [data, setData] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -15,7 +15,7 @@ export default function Index({ auth, departments, cities }) {
 
     useEffect(() => {
         if (searchTerm === "") {
-            const citySlice = cities.filter((e, i) => i % 500 === 0);
+            let citySlice = cities.filter((e, i) => sampleCities.includes(e.code_postal) && i % 5 === 0);
             setData(mode === "city" ? citySlice : departments);
         }
     }, [mode, cities, departments, searchTerm]);
@@ -67,7 +67,7 @@ export default function Index({ auth, departments, cities }) {
         setSearchTerm("");
         setSelectedLocation(null);
         setSearchResults([]);
-        const citySlice = cities.filter((e, i) => i % 500 === 0);
+        let citySlice = cities.filter((e, i) => sampleCities.includes(e.code_postal) && i % 5 === 0);
         setData(mode === "city" ? citySlice : departments);
         mapRef.current?.setView([46.603354, 1.888334], 6); // Center of France
     };

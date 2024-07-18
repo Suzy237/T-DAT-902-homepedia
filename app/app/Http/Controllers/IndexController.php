@@ -8,6 +8,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
+use App\Models\CityData;
 
 class IndexController extends Controller
 {
@@ -77,13 +78,27 @@ class IndexController extends Controller
         return $cities;
     }
 
+    public function getSampleCities()
+    {
+        $cities = CityData::raw(function ($collection) {
+            return $collection->aggregate([
+                ['$sample' => ['size' => 100]],
+                ['$project' => ['departement' => 1, '_id' => 0]]
+            ]);
+        })->pluck('departement');
+
+        return $cities;
+    }
+
     public function index()
     {
         $departments = $this->getDepartements();
         $cities = $this->getCities();
+        $sampleCities = $this->getSampleCities();
         return Inertia::render('Index', [
             'departments' => $departments,
             'cities' => $cities,
+            'sampleCities' => $sampleCities,
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,

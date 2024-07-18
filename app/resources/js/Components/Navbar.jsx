@@ -3,8 +3,15 @@ import { Link } from "@inertiajs/react";
 export default function Navbar({ auth }) {
     return (
         <header className="grid grid-cols-2 items-center gap-2 pb-10 lg:grid-cols-3">
-            <a className="flex lg:justify-center lg:col-start-2" href="/">
-                Homepedia!
+            <a
+                className="flex items-center lg:justify-center lg:col-start-2"
+                href="/"
+            >
+                <img
+                    src="././logo-homepedia.png"
+                    alt="Homepedia Logo"
+                    className="h-24 lg:h-32 mr-2" // Increased height classes for different breakpoints
+                />
             </a>
             <nav className="-mx-3 flex flex-1 justify-end">
                 {auth.user ? (
@@ -32,5 +39,5 @@ export default function Navbar({ auth }) {
                 )}
             </nav>
         </header>
-    )
+    );
 }

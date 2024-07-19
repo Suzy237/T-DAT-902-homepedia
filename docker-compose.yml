@@ -1,144 +1,140 @@
-version: '3.8'
 services:
-
-### Hadoop
   namenode:
-    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
-    container_name: namenode
-    restart: always
+    image: apache/hadoop:3
+    container_name: homepedia-namenode
+    hostname: namenode
+    command: ["hdfs", "namenode"]
     ports:
       - 9870:9870
-      - 9000:9000
-    volumes:
-      - hadoop_namenode:/hadoop/dfs/name
-    environment:
-      - CLUSTER_NAME=test
+    env_file:
+      - .env
     networks:
       - homepedia
-    env_file:
-      - ./hadoop.env
+    volumes:
+      - ./config/:/etc/hadoop
 
   datanode:
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-    container_name: datanode
-    restart: always
-    volumes:
-      - hadoop_datanode:/hadoop/dfs/data
-    environment:
-      SERVICE_PRECONDITION: "namenode:9870"
+    image: apache/hadoop:3
+    container_name: homepedia-datanode
+    command: ["hdfs", "datanode"]
+    env_file:
+      - .env
     networks:
       - homepedia
-    env_file:
-      - ./hadoop.env
+    volumes:
+      - ./config/:/etc/hadoop
 
   resourcemanager:
-    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
-    container_name: resourcemanager
-    restart: always
-    environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
+    image: apache/hadoop:3
+    container_name: homepedia-resourcemanager
+    hostname: resourcemanager
+    command: ["yarn", "resourcemanager"]
+    ports:
+      - 8088:8088
+    env_file:
+      - .env
     networks:
       - homepedia
-    env_file:
-      - ./hadoop.env
 
-  nodemanager1:
-    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
-    container_name: nodemanager
-    restart: always
-    environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+  nodemanager:
+    image: apache/hadoop:3
+    container_name: homepedia-nodemanager
+    command: ["yarn", "nodemanager"]
+    env_file:
+      - .env
     networks:
       - homepedia
-    env_file:
-      - ./hadoop.env
 
-  historyserver:
-    image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
-    container_name: historyserver
+  app:
+    env_file: ./app/.env
+    build:
+      context: ./app
+      dockerfile: ./Dockerfile
+    container_name: homepedia-app
     restart: always
-    environment:
-      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    networks:
+      - homepedia
+      - proxy
+    depends_on:
+      - mongo
+      - postgres
+      - namenode
+      - datanode
+      - resourcemanager
+      - nodemanager
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homepedia-app.rule=Host(`homepedia.icaro.fr`)"
+      - "traefik.http.services.homepedia-app.loadbalancer.server.port=80"
+      - "traefik.http.routers.homepedia-app.tls=true"
+      - "traefik.http.routers.homepedia-app.tls.certresolver=letsencrypt"
+      - "traefik.docker.network=proxy"
+
+  postgres:
+    image: postgres:16
+    container_name: homepedia-postgres
+    restart: always
+    env_file: .env
+    ports:
+      - "5433:5432"
     networks:
       - homepedia
     volumes:
-      - hadoop_historyserver:/hadoop/yarn/timeline
-    env_file:
-      - ./hadoop.env
+      - ./postgres:/var/lib/postgresql/data
 
-### Spark
-  spark-master:
-    image: bitnami/spark:latest
-    command: bin/spark-class org.apache.spark.deploy.master.Master
+  mongo:
+    image: bitnami/mongodb:7.0.12
+    container_name: homepedia-mongo
+    restart: always
+    env_file: .env
     ports:
-      - "9090:8080"
-      - "7077:7077"
+      - "27017:27017"
     networks:
       - homepedia
 
+  spark-master:
+    build: 
+      context: .
+      dockerfile: ./spark/master_dockerfile
+    container_name: homepedia-spark-master
+    volumes:
+      - ./spark-logs:/opt/spark/spark-events
+      - ./config:/spark/config
+    env_file:
+      - .env
+    networks:
+      - homepedia
+    depends_on:
+      - namenode
+      - datanode
+    ports:
+      - "7077:7077"
+      - "8082:8082"
+      - "6066:6066"
+
   spark-worker:
-    image: bitnami/spark:latest
-    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    build: 
+      context: ./spark
+      dockerfile: ./worker_dockerfile
+    # container_name: homepedia-spark-worker
+    env_file:
+      - .env
+    scale: 6
+    volumes:
+      - ./spark-logs:/opt/spark/spark-events
+      - ./config:/spark/config
+    networks:
+      - homepedia
     depends_on:
       - spark-master
     environment:
-      SPARK_MODE: worker
-      SPARK_WORKER_CORES: 2
-      SPARK_WORKER_MEMORY: 1g
-      SPARK_MASTER_URL: spark://spark-master:7077
-    networks:
-      - homepedia
-
-### Postgresql
-  postgres:
-    image: postgres:latest
-    container_name: postgres
-    restart: always
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: homepedia
-    ports:
-      - "5432:5432"
-    networks:
-      - homepedia
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "user"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-### Mongodb
-  mongodb:
-    image: mongodb/mongodb-community-server:latest
-    hostname: mongodb
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: user
-      MONGO_INITDB_ROOT_PASSWORD: pass
-    networks:
-      - homepedia
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    volumes:
-      - mongodb_data:/data/db
+      - SPARK_MODE=worker
 
 volumes:
-  hadoop_namenode:
-  hadoop_datanode:
-  hadoop_historyserver:
-  postgres_data:
-  mongodb_data:
+  datanode:
 
 networks:
   homepedia:
     driver: bridge
+  proxy:
+    external: true
